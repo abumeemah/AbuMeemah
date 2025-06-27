@@ -661,8 +661,13 @@ def setup_database(initialize=False):
                             logger.warning(f"Index conflict on {collection_name}: {keys}. Existing options: {existing_options}, Requested: {options}")
                         break
                 if not index_exists:
-                    db[collection_name].create_index(keys, **options)
-                    logger.info(f"Created index on {collection_name}: {keys} with options {options}")
+                    if collection_name == 'sessions' and index_name == 'expiration_1':
+                        if 'expiration_1' not in existing_indexes:
+                            db[collection_name].create_index(keys, **options)
+                            logger.info(f"Created index on {collection_name}: {keys} with options {options}")
+                    else:
+                        db[collection_name].create_index(keys, **options)
+                        logger.info(f"Created index on {collection_name}: {keys} with options {options}")
         admin_username = os.getenv('ADMIN_USERNAME', 'admin')
         admin_email = os.getenv('ADMIN_EMAIL', 'ficore@gmail.com')
         admin_password = os.getenv('ADMIN_PASSWORD', 'Admin123!')
@@ -838,6 +843,50 @@ def worker_init():
 def worker_exit(server, worker):
     close_mongo_db()
     logger.info("MongoDB request context cleaned up on worker exit")
+
+# Updated before_app_request to handle session initialization and setup wizard
+@app.before_app_request
+def check_wizard_completion():
+    if request.path.startswith('/static/') or request.path in ['/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt']:
+        return
+    if not current_user.is_authenticated:
+        if request.endpoint not in [
+            'users_blueprint.login',
+            'users_blueprint.signup',
+            'users_blueprint.forgot_password',
+            'users_blueprint.reset_password',
+            'users_blueprint.verify_2fa',
+            'users_blueprint.signin',
+            'users_blueprint.signup_redirect',
+            'users_blueprint.forgot_password_redirect',
+            'users_blueprint.reset_password_redirect',
+            'index',
+            'about',
+            'contact',
+            'privacy',
+            'users',
+            'terms',
+            'get_translations',
+            'set_language'
+        ]:
+            flash(trans_function('login_required', default='Please log in'), 'danger')
+            return redirect(url_for('users_blueprint.login'))
+    elif current_user.is_authenticated:
+        if 'session_id' not in session:
+            return  # Sessions not initialized
+        db = get_mongo_db()
+        user = db.users.find_one({'_id': current_user.id})
+        if user and not user.get('setup_complete', False):
+            if request.endpoint not in [
+                'users_blueprint.setup_wizard',
+                'users_blueprint.logout',
+                'settings_blueprint.profile',
+                'coins_blueprint.purchase',
+                'coins_blueprint.get_balance',
+                'set_language',
+                'set_dark_mode'
+            ]:
+                return redirect(url_for('users_blueprint.setup_wizard'))
 
 with app.app_context():
     if not setup_database(initialize=False):
