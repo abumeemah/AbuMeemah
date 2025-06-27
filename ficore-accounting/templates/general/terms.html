@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}{{ trans('terms_title', default='Terms of Service') }}{% endblock %}
+{% block content %}
+<div class="terms-page py-5">
+    <div class="container">
+        <h1 class="text-center mb-4">{{ trans('terms_title', default='Terms of Service') }}</h1>
+        <p class="text-center mb-5">{{ trans('terms_intro', default='By using FiCore Accounting, you agree to our Terms of Service.') }}</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <p>{{ trans('terms_content', default='These Terms govern your use of FiCore Accounting. You agree to use our services lawfully and responsibly. We reserve the right to suspend accounts for misuse. All data you provide must be accurate. We are not liable for any losses due to unauthorized access to your account. For support, contact us at ficoreafrica@gmail.com.') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    // Enhanced language toggle to handle redirect response
+    function toggleLanguage() {
+        fetch('{{ url_for("set_language", lang="ha" if session.get("lang", "en") == "en" else "en") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lang: '{{ "ha" if session.get("lang", "en") == "en" else "en" }}' })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Language toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Language toggle error:', error));
+    }
+
+    // Enhanced dark mode toggle to handle 204 response
+    function toggleDarkMode() {
+        fetch('{{ url_for("set_dark_mode") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dark_mode: !{{ session.get('dark_mode', False) | tojson }} })
+        }).then(response => {
+            if (response.ok) {
+                document.documentElement.classList.toggle('dark-mode');
+                window.location.reload();
+            } else {
+                console.error('Dark mode toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Dark mode toggle error:', error));
+    }
+</script>
+{% endblock %}

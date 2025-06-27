@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('credit_coins', default='Credit Coins') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ trans('credit_coins', default='Credit Coins') }}</h1>
+    <form action="{{ url_for('admin_blueprint.coins_credit') }}" method="POST" class="row g-3">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="username" class="form-label">{{ trans('username', default='Username') }}</label>
+            {{ form.username(class="form-control", required=True) }}
+            {% if form.username.errors %}
+                <p class="text-danger mt-1">{{ form.username.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="amount" class="form-label">{{ trans('coin_amount', default='Coin Amount') }}</label>
+            {{ form.amount(class="form-control", type="number", required=True) }}
+            {% if form.amount.errors %}
+                <p class="text-danger mt-1">{{ form.amount.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">{{ trans('credit_coins', default='Credit Coins') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

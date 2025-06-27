@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% block title %}{{ trans('my_profile', default='My Profile') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('dashboard_blueprint.index') }}" class="back-arrow me-3">&larr;</a>
+        <h1>{{ trans('hello_user', default='Hello') }}, {{ user.display_name or user._id }}!</h1>
+        <div class="profile-pic-container ms-auto">
+            <img src="{{ url_for('static', filename='img/default_profile.png') }}" alt="Profile Picture" class="profile-pic" onerror="this.src='{{ url_for('static', filename='img/ficore_records_logo.png') }}';">
+            <span class="edit-profile-pic-icon">&#9998;</span>
+        </div>
+    </div>
+
+    {% if user.role == 'trader' %}
+    <div class="card card-body mb-3">
+        <p class="mb-0">{{ trans('account_type', default='Account Type') }}: <strong>{{ trans('trader_account', default='Trader Account') }}</strong> 
+        <span class="info-icon" title="{{ trans('trader_account_info', default='Your trader account gives you access to all business features.') }}">ⓘ</span></p>
+    </div>
+    {% endif %}
+
+    <div class="d-grid mb-4">
+        <button class="btn btn-outline-primary" onclick="location.href='{{ url_for('feedback') }}'">
+            <i class="bi bi-chat-dots me-2"></i> {{ trans('provide_feedback', default='Provide Feedback') }}
+        </button>
+    </div>
+
+    <section class="profile-section mb-4">
+        <h2>{{ trans('personal_data', default='Personal Data') }}</h2>
+        <div class="card card-body">
+            <form method="POST" action="{{ url_for('settings_blueprint.profile') }}">
+                {{ form.csrf_token }}
+
+                <div class="form-group mb-3">
+                    <label for="full_name" class="form-label">{{ trans('full_name', default='Full name') }}</label>
+                    {{ form.full_name(placeholder=trans('full_name_placeholder', default='Enter your full name')) }}
+                    {% if form.full_name.errors %}
+                        {% for error in form.full_name.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="phone" class="form-label">{{ trans('phone_number', default='Phone number') }}</label>
+                    {{ form.phone(placeholder=trans('phone_placeholder', default='+234xxxxxxxxx')) }}
+                    {% if form.phone.errors %}
+                        {% for error in form.phone.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label">{{ trans('email', default='Email') }}</label>
+                    {{ form.email(placeholder=trans('email_placeholder', default='your@email.com')) }}
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% if user.role == 'trader' %}
+                <hr class="my-4">
+                <h5>{{ trans('business_information', default='Business Information') }}</h5>
+                
+                <div class="form-group mb-3">
+                    <label for="business_name" class="form-label">{{ trans('business_name', default='Business Name') }}</label>
+                    {{ form.business_name(placeholder=trans('business_name_placeholder', default='Your Business Name')) }}
+                    {% if form.business_name.errors %}
+                        {% for error in form.business_name.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="business_address" class="form-label">{{ trans('business_address', default='Business Address') }}</label>
+                    {{ form.business_address(placeholder=trans('business_address_placeholder', default='Your Business Address')) }}
+                    {% if form.business_address.errors %}
+                        {% for error in form.business_address.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="industry" class="form-label">{{ trans('industry', default='Industry') }}</label>
+                    {{ form.industry(placeholder=trans('industry_placeholder', default='e.g., Retail, Services, Manufacturing')) }}
+                    {% if form.industry.errors %}
+                        {% for error in form.industry.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="text-center">
+                    {{ form.submit }}
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="profile-section mb-4">
+        <h2>{{ trans('app_settings', default='App Settings') }}</h2>
+        <div class="card card-body">
+            <a href="{{ url_for('settings_blueprint.language') }}" class="list-item">
+                <i class="bi bi-translate icon-left"></i> {{ trans('language', default='Language') }}
+                <i class="bi bi-chevron-right icon-right"></i>
+            </a>
+            <div class="list-item toggle-item">
+                <i class="bi bi-currency-dollar icon-left"></i> {{ trans('show_kobo', default='Show kobo (Amounts in the format 00.00)') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="showKoboToggle" {% if user.settings.get('show_kobo') %}checked{% endif %}>
+                    <label class="form-check-label" for="showKoboToggle"></label>
+                </div>
+            </div>
+            <div class="list-item toggle-item">
+                <i class="bi bi-eye-slash icon-left"></i> {{ trans('incognito_mode', default='Incognito mode (Hide balance)') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="incognitoModeToggle" {% if user.settings.get('incognito_mode') %}checked{% endif %}>
+                    <label class="form-check-label" for="incognitoModeToggle"></label>
+                </div>
+            </div>
+            <div class="list-item toggle-item">
+                <i class="bi bi-volume-up icon-left"></i> {{ trans('app_sounds', default='App sounds') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="appSoundsToggle" {% if user.settings.get('app_sounds') %}checked{% endif %}>
+                    <label class="form-check-label" for="appSoundsToggle"></label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-section mb-4">
+        <h2>{{ trans('security', default='Security') }}</h2>
+        <div class="card card-body">
+            <div class="list-item toggle-item">
+                <i class="bi bi-fingerprint icon-left"></i> {{ trans('use_fingerprint_password', default='Use Fingerprint ID (For password)') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="fingerprintPasswordToggle" {% if user.security_settings.get('fingerprint_password') %}checked{% endif %}>
+                    <label class="form-check-label" for="fingerprintPasswordToggle"></label>
+                </div>
+            </div>
+            <div class="list-item toggle-item">
+                <i class="bi bi-fingerprint icon-left"></i> {{ trans('use_fingerprint_pin', default='Use Fingerprint ID (For transaction PIN)') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="fingerprintPinToggle" {% if user.security_settings.get('fingerprint_pin') %}checked{% endif %}>
+                    <label class="form-check-label" for="fingerprintPinToggle"></label>
+                </div>
+            </div>
+            <div class="list-item toggle-item">
+                <i class="bi bi-shield-lock icon-left"></i> {{ trans('hide_sensitive_data', default='Hide sensitive data (Disable screenshots)') }}
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="hideSensitiveDataToggle" {% if user.security_settings.get('hide_sensitive_data') %}checked{% endif %}>
+                    <label class="form-check-label" for="hideSensitiveDataToggle"></label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="profile-section mb-4">
+        <h2>{{ trans('about', default='About') }}</h2>
+        <div class="card card-body">
+            <a href="{{ url_for('contact') }}" class="list-item">
+                <i class="bi bi-headset icon-left"></i> {{ trans('support', default='Support (Our contacts)') }}
+                <i class="bi bi-chevron-right icon-right"></i>
+            </a>
+            <a href="{{ url_for('feedback') }}" class="list-item">
+                <i class="bi bi-star icon-left"></i> {{ trans('rate_app', default='Rate the app (Tell us about your experience)') }}
+                <i class="bi bi-chevron-right icon-right"></i>
+            </a>
+            <a href="{{ url_for('about') }}" class="list-item">
+                <i class="bi bi-info-circle icon-left"></i> {{ trans('about_ficore', default='About FiCore') }}
+                <i class="bi bi-chevron-right icon-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <div class="d-grid mb-4">
+        <button class="btn btn-danger" onclick="location.href='{{ url_for('users_blueprint.logout') }}'">
+            <i class="bi bi-box-arrow-right me-2"></i> {{ trans('logout', default='Log out') }}
+        </button>
+    </div>
+
+</div>
+
+<style>
+    .profile-pic-container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .profile-pic {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .edit-profile-pic-icon {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: var(--button-primary-bg);
+        color: white;
+        border-radius: 50%;
+        padding: 4px;
+        font-size: 0.8em;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        cursor: pointer;
+    }
+    .profile-section h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+    .list-item, .toggle-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--card-border);
+        color: var(--text-color);
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+    .list-item:last-child, .toggle-item:last-child {
+        border-bottom: none;
+    }
+    .list-item:hover {
+        background-color: var(--button-secondary-hover);
+        color: var(--text-color);
+        text-decoration: none;
+    }
+    .icon-left {
+        font-size: 1.1em;
+        width: 30px;
+        text-align: center;
+        margin-right: 15px;
+        color: var(--text-secondary);
+    }
+    .icon-right {
+        margin-left: auto;
+        color: var(--text-muted);
+    }
+    .toggle-item .form-check-input {
+        margin-top: 0;
+    }
+    .back-arrow {
+        font-size: 1.5rem;
+        color: var(--text-color);
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .back-arrow:hover {
+        color: var(--accent-blue);
+    }
+    .info-icon {
+        cursor: help;
+        color: var(--text-muted);
+        margin-left: 5px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.form-check-input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const settingName = this.id;
+                const value = this.checked;
+
+                // Send AJAX request to update user setting in backend
+                fetch('/settings/api/update-user-setting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        setting: settingName,
+                        value: value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('{{ trans('failed_to_update_setting', default='Failed to update setting') }}: ' + (data.message || '{{ trans('unknown_error', default='Unknown error') }}'));
+                        this.checked = !value; // Revert toggle if update failed
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating setting:', error);
+                    alert('{{ trans('error_occurred', default='An error occurred. Please try again.') }}');
+                    this.checked = !value; // Revert toggle on network error
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}

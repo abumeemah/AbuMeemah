@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('purchase_coins', default='Purchase Coins') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('purchase_coins', default='Purchase Coins') }}</h1>
+        <small class="subtext">{{ trans('wallet_subtext', default='Tsabobin Cikin App') }}</small>
+    </div>
+    <form action="{{ url_for('coins_blueprint.purchase') }}" method="POST" class="row g-3">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="amount" class="form-label">{{ trans('coin_amount', default='Coin Amount') }}</label>
+            {{ form.amount(class="form-control", required=True) }}
+            {% if form.amount.errors %}
+                <p class="text-danger mt-1">{{ form.amount.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="payment_method" class="form-label">{{ trans('payment_method', default='Payment Method') }}</label>
+            {{ form.payment_method(class="form-control", required=True) }}
+            {% if form.payment_method.errors %}
+                <p class="text-danger mt-1">{{ form.payment_method.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">{{ trans('purchase', default='Purchase') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

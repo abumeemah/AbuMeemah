@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ trans('core_provide_feedback') | default('Provide Feedback') }}{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">{{ trans('core_provide_feedback') | default('Provide Feedback') }}</h1>
+    <div class="card">
+        <div class="card-body">
+            <form class="validate-form" method="POST" action="{{ url_for('feedback') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group mb-3">
+                    <label for="tool_name" class="form-label">{{ trans('select_tool') | default('Select Tool') }}</label>
+                    <select name="tool_name" id="tool_name" class="form-select" required>
+                        <option value="">{{ trans('choose_option') | default('Choose...') }}</option>
+                        {% for tool in tool_options %}
+                            <option value="{{ tool[0] }}">{{ tool[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">{{ trans('invalid_tool') | default('Please select a valid tool') }}</div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="rating" class="form-label">{{ trans('rating') | default('Rating (1-5)') }}</label>
+                    <input type="number" name="rating" id="rating" class="form-control" min="1" max="5" required>
+                    <div class="invalid-feedback">{{ trans('invalid_rating') | default('Please provide a rating between 1 and 5') }}</div>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="comment" class="form-label">{{ trans('comment') | default('Comment') }}</label>
+                    <textarea name="comment" id="comment" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">{{ trans('submit') | default('Submit') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

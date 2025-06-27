@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('money_in', default='Money In') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('money_in', default='Money In') }}</h1>
+        <small class="subtext">{{ trans('money_in_subtext', default='Kuɗin Da Aka Biyaka') }}</small>
+    </div>
+    <a href="{{ url_for('receipts_blueprint.add') }}" class="btn btn-primary mb-4">{{ trans('add_money_in', default='Add Money In') }}</a>
+    {% if receipts|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ trans('party_name', default='Party Name') }}</th>
+                        <th>{{ trans('amount', default='Amount') }}</th>
+                        <th>{{ trans('date', default='Date') }}</th>
+                        <th>{{ trans('payment_method', default='Payment Method') }}</th>
+                        <th>{{ trans('category', default='Category') }}</th>
+                        <th>{{ trans('actions', default='Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for receipt in receipts %}
+                        <tr>
+                            <td data-label="{{ trans('party_name', default='Party Name') }}">{{ receipt.party_name }}</td>
+                            <td data-label="{{ trans('amount', default='Amount') }}">{{ format_currency(receipt.amount) }}</td>
+                            <td data-label="{{ trans('date', default='Date') }}">{{ format_date(receipt.created_at) }}</td>
+                            <td data-label="{{ trans('payment_method', default='Payment Method') }}">{{ receipt.method or '-' }}</td>
+                            <td data-label="{{ trans('category', default='Category') }}">{{ receipt.category or '-' }}</td>
+                            <td data-label="{{ trans('actions', default='Actions') }}">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-info btn-sm view-btn" 
+                                            data-id="{{ receipt._id }}"
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ trans('view_details', default='View Details') }}">
+                                        {{ trans('view', default='View') }}
+                                    </button>
+                                    <a href="{{ url_for('receipts_blueprint.generate_pdf', id=receipt._id) }}" 
+                                       class="btn btn-success btn-sm"
+                                       data-bs-toggle="tooltip" 
+                                       title="{{ trans('download_receipt', default='Download Receipt') }}">
+                                        {{ trans('download_pdf', default='PDF') }}
+                                    </a>
+                                    <button type="button" class="btn btn-warning btn-sm share-btn" 
+                                            data-id="{{ receipt._id }}"
+                                            data-name="{{ receipt.party_name }}"
+                                            data-amount="{{ receipt.amount }}"
+                                            data-date="{{ format_date(receipt.created_at) }}"
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ trans('share_receipt', default='Share Receipt') }}">
+                                        {{ trans('share', default='Share') }}
+                                    </button>
+                                    <a href="{{ url_for('receipts_blueprint.edit', id=receipt._id) }}" 
+                                       class="btn btn-primary btn-sm"
+                                       data-bs-toggle="tooltip" 
+                                       title="{{ trans('edit', default='Edit') }}">
+                                        {{ trans('edit', default='Edit') }}
+                                    </a>
+                                    <form action="{{ url_for('receipts_blueprint.delete', id=receipt._id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                onclick="return confirm('{{ trans('confirm_delete', default='Are you sure?') }}')"
+                                                data-bs-toggle="tooltip" 
+                                                title="{{ trans('delete', default='Delete') }}">
+                                            {{ trans('delete', default='Delete') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_money_in', default='No money in recorded') }}</p>
+            <p class="mt-2">{{ trans('add_money_in_desc', default='Start by logging your first money in.') }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Receipt Details Modal -->
+<div class="modal fade" id="receiptDetailsModal" tabindex="-1" aria-labelledby="receiptDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiptDetailsModalLabel">{{ trans('receipt_details', default='Receipt Details') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ trans('close', default='Close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>{{ trans('party_name', default='Party Name') }}:</strong> <span id="detailPartyName"></span></p>
+                        <p><strong>{{ trans('amount', default='Amount') }}:</strong> <span id="detailAmount"></span></p>
+                        <p><strong>{{ trans('payment_method', default='Payment Method') }}:</strong> <span id="detailMethod"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>{{ trans('category', default='Category') }}:</strong> <span id="detailCategory"></span></p>
+                        <p><strong>{{ trans('date', default='Date') }}:</strong> <span id="detailDate"></span></p>
+                        <p><strong>{{ trans('receipt_id', default='Receipt ID') }}:</strong> <span id="detailReceiptId"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="downloadReceiptBtn">
+                    {{ trans('download_receipt', default='Download Receipt') }}
+                </button>
+                <button type="button" class="btn btn-info" id="shareReceiptBtn">
+                    {{ trans('share_receipt', default='Share Receipt') }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ trans('close', default='Close') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    let currentReceiptData = null;
+
+    // View button functionality
+    document.querySelectorAll('.view-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const receiptId = this.dataset.id;
+            
+            fetch(`/receipts/view/${receiptId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    
+                    currentReceiptData = data;
+                    
+                    document.getElementById('detailPartyName').textContent = data.party_name;
+                    document.getElementById('detailAmount').textContent = `{{ trans('currency_symbol', default='₦') }}${parseFloat(data.amount).toLocaleString()}`;
+                    document.getElementById('detailMethod').textContent = data.method || '{{ trans('not_provided', default='Not provided') }}';
+                    document.getElementById('detailCategory').textContent = data.category || '{{ trans('no_category', default='No category provided') }}';
+                    document.getElementById('detailDate').textContent = new Date(data.created_at).toLocaleDateString();
+                    document.getElementById('detailReceiptId').textContent = data._id;
+                    
+                    new bootstrap.Modal(document.getElementById('receiptDetailsModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error fetching receipt details:', error);
+                    alert('{{ trans('error_loading_details', default='Error loading details') }}');
+                });
+        });
+    });
+
+    // Download receipt functionality
+    document.getElementById('downloadReceiptBtn').addEventListener('click', function() {
+        if (currentReceiptData) {
+            window.location.href = `/receipts/generate_pdf/${currentReceiptData._id}`;
+        }
+    });
+
+    // Share receipt functionality
+    document.getElementById('shareReceiptBtn').addEventListener('click', function() {
+        if (currentReceiptData) {
+            const message = `Receipt from FiCore Records\nPayer: ${currentReceiptData.party_name}\nAmount: {{ trans('currency_symbol', default='₦') }}${parseFloat(currentReceiptData.amount).toLocaleString()}\nDate: ${new Date(currentReceiptData.created_at).toLocaleDateString()}\nReceipt ID: ${currentReceiptData._id}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ trans('ficore_receipt', default='FiCore Receipt') }}',
+                    text: message,
+                    url: window.location.href
+                })
+                .then(() => console.log('Successfully shared'))
+                .catch((error) => console.error('Error sharing:', error));
+            } else {
+                // WhatsApp fallback
+                const whatsappLink = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappLink, '_blank');
+            }
+        }
+    });
+
+    // Share button functionality (from table)
+    document.querySelectorAll('.share-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const name = this.dataset.name;
+            const amount = parseFloat(this.dataset.amount).toLocaleString();
+            const date = this.dataset.date;
+            const receiptId = this.dataset.id;
+            
+            const message = `Receipt from FiCore Records\nPayer: ${name}\nAmount: {{ trans('currency_symbol', default='₦') }}${amount}\nDate: ${date}\nReceipt ID: ${receiptId}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ trans('ficore_receipt', default='FiCore Receipt') }}',
+                    text: message,
+                    url: window.location.href
+                })
+                .then(() => console.log('Successfully shared'))
+                .catch((error) => console.error('Error sharing:', error));
+            } else {
+                // WhatsApp fallback
+                const whatsappLink = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappLink, '_blank');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

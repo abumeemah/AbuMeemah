@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('inventory_report', default='Inventory Report') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('inventory_report', default='Inventory Report') }}</h1>
+        <small class="subtext">{{ trans('reports_subtext', default='Rahoton Kasuwanci') }}</small>
+    </div>
+    <form action="{{ url_for('reports_blueprint.inventory') }}" method="POST" class="row g-3 mb-4">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="item_name" class="form-label">{{ trans('item_name', default='Item Name') }}</label>
+            {{ form.item_name(class="form-control") }}
+            {% if form.item_name.errors %}
+                <p class="text-danger mt-1">{{ form.item_name.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" name="format" value="html" class="btn btn-primary">{{ trans('view', default='View') }}</button>
+            <button type="submit" name="format" value="pdf" class="btn btn-success">{{ trans('download_pdf', default='Download PDF') }}</button>
+            <button type="submit" name="format" value="csv" class="btn btn-success">{{ trans('download_csv', default='Download CSV') }}</button>
+        </div>
+    </form>
+    {% if items|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ trans('item_name', default='Item Name') }}</th>
+                        <th>{{ trans('quantity', default='Quantity') }}</th>
+                        <th>{{ trans('unit', default='Unit') }}</th>
+                        <th>{{ trans('buying_price', default='Buying Price') }}</th>
+                        <th>{{ trans('selling_price', default='Selling Price') }}</th>
+                        <th>{{ trans('threshold', default='Threshold') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td data-label="{{ trans('item_name', default='Item Name') }}">{{ item.item_name }}</td>
+                            <td data-label="{{ trans('quantity', default='Quantity') }}">{{ item.qty }}</td>
+                            <td data-label="{{ trans('unit', default='Unit') }}">{{ trans(item.unit, default=item.unit) }}</td>
+                            <td data-label="{{ trans('buying_price', default='Buying Price') }}">{{ format_currency(item.buying_price) }}</td>
+                            <td data-label="{{ trans('selling_price', default='Selling Price') }}">{{ format_currency(item.selling_price) }}</td>
+                            <td data-label="{{ trans('threshold', default='Threshold') }}">{{ item.threshold }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_items', default='No inventory items found') }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('your_wallet', default='Your Wallet') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('your_wallet', default='Your Wallet') }}</h1>
+        <small class="subtext">{{ trans('wallet_subtext', default='Tsabobin Cikin App') }}</small>
+    </div>
+    <div class="d-flex gap-2 mb-4">
+        <a href="{{ url_for('coins_blueprint.purchase') }}" class="btn btn-primary">{{ trans('purchase_coins', default='Purchase Coins') }}</a>
+        <a href="{{ url_for('coins_blueprint.receipt_upload') }}" class="btn btn-primary">{{ trans('upload_receipt', default='Upload Receipt') }}</a>
+    </div>
+    <p class="mb-4">{{ trans('coin_balance', default='Coin Balance') }}: <span id="coin-balance">{{ coin_balance }}</span></p>
+    {% if transactions %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ trans('date', default='Date') }}</th>
+                        <th>{{ trans('type', default='Type') }}</th>
+                        <th>{{ trans('amount', default='Amount') }}</th>
+                        <th>{{ trans('reference', default='Reference') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                        <tr>
+                            <td data-label="{{ trans('date', default='Date') }}">{{ tx.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td data-label="{{ trans('type', default='Type') }}">{{ trans(tx.type, default=tx.type) }}</td>
+                            <td data-label="{{ trans('amount', default='Amount') }}">{{ tx.amount }}</td>
+                            <td data-label="{{ trans('reference', default='Reference') }}">{{ tx.ref }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_transactions', default='No transactions found') }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

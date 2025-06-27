@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('add_money_in', default='Add Money In') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('add_money_in', default='Add Money In') }}</h1>
+        <small class="subtext">{{ trans('money_in_subtext', default='Kuɗin Da Aka Biyaka') }}</small>
+    </div>
+    <form action="{{ url_for('receipts_blueprint.add') }}" method="POST" enctype="multipart/form-data" class="row g-3">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="type" value="receipt">
+        <div class="col-12">
+            <label for="party_name" class="form-label">{{ trans('party_name', default='Party Name') }}</label>
+            {{ form.party_name(class="form-control", required=True) }}
+            {% if form.party_name.errors %}
+                <p class="text-danger mt-1">{{ form.party_name.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="date" class="form-label">{{ trans('date', default='Date') }}</label>
+            {{ form.date(class="form-control", type="date", required=True) }}
+            {% if form.date.errors %}
+                <p class="text-danger mt-1">{{ form.date.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="amount" class="form-label">{{ trans('amount', default='Amount') }}</label>
+            {{ form.amount(class="form-control", type="number", step="0.01", required=True) }}
+            {% if form.amount.errors %}
+                <p class="text-danger mt-1">{{ form.amount.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="method" class="form-label">{{ trans('payment_method', default='Payment Method') }}</label>
+            {{ form.method(class="form-control") }}
+            {% if form.method.errors %}
+                <p class="text-danger mt-1">{{ form.method.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="category" class="form-label">{{ trans('category', default='Category') }}</label>
+            {{ form.category(class="form-control") }}
+            {% if form.category.errors %}
+                <p class="text-danger mt-1">{{ form.category.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="file" class="form-label">{{ trans('file_upload', default='File Upload (Optional)') }}</label>
+            <input type="file" name="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">{{ trans('submit', default='Submit') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

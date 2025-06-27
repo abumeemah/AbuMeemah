@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('settings', default='Settings') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ trans('settings', default='Settings') }}</h1>
+    <div class="d-grid gap-2">
+        <a href="{{ url_for('settings_blueprint.profile') }}" class="btn btn-primary">{{ trans('profile', default='Profile') }}</a>
+        <a href="{{ url_for('settings_blueprint.notifications') }}" class="btn btn-primary">{{ trans('notifications', default='Notifications') }}</a>
+        <a href="{{ url_for('settings_blueprint.language') }}" class="btn btn-primary">{{ trans('language', default='Language') }}</a>
+    </div>
+</div>
+{% endblock %}

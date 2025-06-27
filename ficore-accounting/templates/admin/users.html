@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('manage_users', default='Manage Users') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ trans('manage_users', default='Manage Users') }}</h1>
+    <a href="{{ url_for('admin_blueprint.dashboard') }}" class="btn btn-primary mb-4">{{ trans('back_to_dashboard', default='Back to Dashboard') }}</a>
+    {% if users %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ trans('username', default='Username') }}</th>
+                        <th>{{ trans('email', default='Email') }}</th>
+                        <th>{{ trans('role', default='Role') }}</th>
+                        <th>{{ trans('status', default='Status') }}</th>
+                        <th>{{ trans('actions', default='Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ trans(user.role, default=user.role) }}</td>
+                            <td>{{ trans('suspended', default='Suspended') if user.get('suspended') else trans('active', default='Active') }}</td>
+                            <td>
+                                {% if not user.get('suspended') %}
+                                    <form action="{{ url_for('admin_blueprint.suspend_user', user_id=user._id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-warning btn-sm">{{ trans('suspend', default='Suspend') }}</button>
+                                    </form>
+                                {% endif %}
+                                <form action="{{ url_for('admin_blueprint.delete_user', user_id=user._id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ trans('confirm_delete', default='Are you sure?') }}')">{{ trans('delete', default='Delete') }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_users', default='No users found') }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

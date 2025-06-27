@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('edit_goods_stock', default='Edit Goods & Stock') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('edit_goods_stock', default='Edit Goods & Stock') }}</h1>
+        <small class="subtext">{{ trans('goods_stock_subtext', default='Kayanka da Hajojinka') }}</small>
+    </div>
+    <form action="{{ url_for('inventory_blueprint.edit', id=item._id) }}" method="POST" class="row g-3">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="item_name" class="form-label">{{ trans('item_name', default='Item Name') }}</label>
+            {{ form.item_name(class="form-control", required=True) }}
+            {% if form.item_name.errors %}
+                <p class="text-danger mt-1">{{ form.item_name.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="qty" class="form-label">{{ trans('quantity', default='Quantity') }}</label>
+            {{ form.qty(class="form-control", type="number", required=True) }}
+            {% if form.qty.errors %}
+                <p class="text-danger mt-1">{{ form.qty.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="unit" class="form-label">{{ trans('unit', default='Unit') }}</label>
+            {{ form.unit(class="form-control") }}
+            {% if form.unit.errors %}
+                <p class="text-danger mt-1">{{ form.unit.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="buying_price" class="form-label">{{ trans('buying_price', default='Buying Price') }}</label>
+            {{ form.buying_price(class="form-control", type="number", step="0.01") }}
+            {% if form.buying_price.errors %}
+                <p class="text-danger mt-1">{{ form.buying_price.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="selling_price" class="form-label">{{ trans('selling_price', default='Selling Price') }}</label>
+            {{ form.selling_price(class="form-control", type="number", step="0.01") }}
+            {% if form.selling_price.errors %}
+                <p class="text-danger mt-1">{{ form.selling_price.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="threshold" class="form-label">{{ trans('threshold', default='Low Stock Threshold') }}</label>
+            {{ form.threshold(class="form-control", type="number") }}
+            {% if form.threshold.errors %}
+                <p class="text-danger mt-1">{{ form.threshold.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">{{ trans('save', default='Save') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

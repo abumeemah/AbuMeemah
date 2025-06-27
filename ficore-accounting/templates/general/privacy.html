@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}{{ trans('privacy_title', default='Privacy Policy') }}{% endblock %}
+{% block content %}
+<div class="privacy-page py-5">
+    <div class="container">
+        <h1 class="text-center mb-4">{{ trans('privacy_title', default='Privacy Policy') }}</h1>
+        <p class="text-center mb-5">{{ trans('privacy_intro', default='Our Privacy Policy outlines how we collect, use, and protect your personal information.') }}</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <p>{{ trans('privacy_content', default='At FiCore Africa, we are committed to safeguarding your privacy. We collect only the data necessary to provide our services, such as your email and account details. This information is securely stored and used solely for operational purposes. We do not share your data with third parties without your consent, except as required by law. For questions, contact us at ficoreafrica@gmail.com.') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    // Enhanced language toggle to handle redirect response
+    function toggleLanguage() {
+        fetch('{{ url_for("set_language", lang="ha" if session.get("lang", "en") == "en" else "en") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lang: '{{ "ha" if session.get("lang", "en") == "en" else "en" }}' })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Language toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Language toggle error:', error));
+    }
+
+    // Enhanced dark mode toggle to handle 204 response
+    function toggleDarkMode() {
+        fetch('{{ url_for("set_dark_mode") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dark_mode: !{{ session.get('dark_mode', False) | tojson }} })
+        }).then(response => {
+            if (response.ok) {
+                document.documentElement.classList.toggle('dark-mode');
+                window.location.reload();
+            } else {
+                console.error('Dark mode toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Dark mode toggle error:', error));
+    }
+</script>
+{% endblock %}

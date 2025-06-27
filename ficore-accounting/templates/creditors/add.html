@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('create_what_you_owe', default='Create What You Owe') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('create_what_you_owe', default='Create What You Owe') }}</h1>
+        <small class="subtext">{{ trans('what_you_owe_subtext', default='Kuɗin da Mutane ke Bin Ka') }}</small>
+    </div>
+    <form action="{{ url_for('creditors_blueprint.add') }}" method="POST" class="row g-3">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="type" value="creditor">
+        <div class="col-12">
+            <label for="name" class="form-label">{{ trans('name', default='Name') }}</label>
+            {{ form.name(class="form-control", required=True) }}
+            {% if form.name.errors %}
+                <p class="text-danger mt-1">{{ form.name.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="contact" class="form-label">{{ trans('contact', default='Contact') }}</label>
+            {{ form.contact(class="form-control") }}
+            {% if form.contact.errors %}
+                <p class="text-danger mt-1">{{ form.contact.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="amount_owed" class="form-label">{{ trans('amount', default='Amount') }}</label>
+            {{ form.amount_owed(class="form-control", type="number", step="0.01", required=True) }}
+            {% if form.amount_owed.errors %}
+                <p class="text-danger mt-1">{{ form.amount_owed.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="description" class="form-label">{{ trans('description', default='Description') }}</label>
+            {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <p class="text-danger mt-1">{{ form.description.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary w-100">{{ trans('submit', default='Submit') }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

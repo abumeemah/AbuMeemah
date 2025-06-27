@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('profit_loss_report', default='Profit/Loss Report') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('profit_loss_report', default='Profit/Loss Report') }}</h1>
+        <small class="subtext">{{ trans('reports_subtext', default='Rahoton Kasuwanci') }}</small>
+    </div>
+    <form action="{{ url_for('reports_blueprint.profit_loss') }}" method="POST" class="row g-3 mb-4">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="start_date" class="form-label">{{ trans('start_date', default='Start Date') }}</label>
+            {{ form.start_date(class="form-control", type="date") }}
+            {% if form.start_date.errors %}
+                <p class="text-danger mt-1">{{ form.start_date.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="end_date" class="form-label">{{ trans('end_date', default='End Date') }}</label>
+            {{ form.end_date(class="form-control", type="date") }}
+            {% if form.end_date.errors %}
+                <p class="text-danger mt-1">{{ form.end_date.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="category" class="form-label">{{ trans('category', default='Category') }}</label>
+            {{ form.category(class="form-control") }}
+            {% if form.category.errors %}
+                <p class="text-danger mt-1">{{ form.category.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button type="submit" name="format" value="html" class="btn btn-primary">{{ trans('view', default='View') }}</button>
+            <button type="submit" name="format" value="pdf" class="btn btn-success">{{ trans('download_pdf', default='Download PDF') }}</button>
+            <button type="submit" name="format" value="csv" class="btn btn-success">{{ trans('download_csv', default='Download CSV') }}</button>
+        </div>
+    </form>
+    {% if cashflows|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ trans('date', default='Date') }}</th>
+                        <th>{{ trans('party_name', default='Party Name') }}</th>
+                        <th>{{ trans('type', default='Type') }}</th>
+                        <th>{{ trans('amount', default='Amount') }}</th>
+                        <th>{{ trans('category', default='Category') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cashflow in cashflows %}
+                        <tr>
+                            <td data-label="{{ trans('date', default='Date') }}">{{ format_date(cashflow.created_at) }}</td>
+                            <td data-label="{{ trans('party_name', default='Party Name') }}">{{ cashflow.party_name }}</td>
+                            <td data-label="{{ trans('type', default='Type') }}">{{ trans(cashflow.type, default=cashflow.type) }}</td>
+                            <td data-label="{{ trans('amount', default='Amount') }}">{{ format_currency(cashflow.amount) }}</td>
+                            <td data-label="{{ trans('category', default='Category') }}">{{ trans(cashflow.category, default=cashflow.category) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_transactions', default='No transactions found') }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block title %}{{ trans('what_they_owe_you', default='What They Owe You') }} - FiCore{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="page-title">
+        <h1>{{ trans('what_they_owe_you', default='What They Owe You') }}</h1>
+        <small class="subtext">{{ trans('what_they_owe_you_subtext', default='Kuɗin da Kake Bin Wasu') }}</small>
+    </div>
+    <a href="{{ url_for('debtors_blueprint.add') }}" class="btn btn-secondary mb-4">{{ trans('create_what_they_owe_you', default='Create What They Owe You') }}</a>
+    {% if debtors|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>{{ trans('name', default='Name') }}</th>
+                        <th>{{ trans('amount', default='Amount') }}</th>
+                        <th>{{ trans('contact', default='Contact') }}</th>
+                        <th>{{ trans('created_at', default='Created At') }}</th>
+                        <th>{{ trans('reminders', default='Reminders') }}</th>
+                        <th>{{ trans('actions', default='Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for debtor in debtors %}
+                        <tr>
+                            <td data-label="{{ trans('name', default='Name') }}">{{ debtor.name }}</td>
+                            <td data-label="{{ trans('amount', default='Amount') }}">{{ format_currency(debtor.amount_owed) }}</td>
+                            <td data-label="{{ trans('contact', default='Contact') }}">{{ debtor.contact or '-' }}</td>
+                            <td data-label="{{ trans('created_at', default='Created At') }}">{{ format_date(debtor.created_at) }}</td>
+                            <td data-label="{{ trans('reminders', default='Reminders') }}">{{ debtor.get('reminder_count', 0) }}</td>
+                            <td data-label="{{ trans('actions', default='Actions') }}">
+                                <div class="responsive-btn-group" role="group">
+                                    <a href="{{ url_for('debtors_blueprint.view_page', id=debtor._id) }}" 
+                                       class="btn btn-info btn-sm"
+                                       data-bs-toggle="tooltip" 
+                                       title="{{ trans('view_details', default='View Details') }}">
+                                        {{ trans('view', default='View') }}
+                                    </a>
+                                    {% if debtor.contact %}
+                                    <button type="button" class="btn btn-warning btn-sm reminder-btn" 
+                                            data-id="{{ debtor._id }}"
+                                            data-name="{{ debtor.name }}"
+                                            data-amount="{{ debtor.amount_owed }}"
+                                            data-contact="{{ debtor.contact }}"
+                                            data-date="{{ format_date(debtor.created_at) }}"
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ trans('send_reminder', default='Send Reminder') }}">
+                                        {{ trans('reminder', default='Reminder') }}
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm snooze-btn" 
+                                            data-id="{{ debtor._id }}"
+                                            data-name="{{ debtor.name }}"
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ trans('snooze_reminder', default='Snooze Reminder') }}">
+                                        {{ trans('snooze', default='Snooze') }}
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-sm share-btn" 
+                                            data-id="{{ debtor._id }}"
+                                            data-contact="{{ debtor.contact }}"
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ trans('share_iou', default='Share IOU') }}">
+                                        {{ trans('share', default='Share') }}
+                                    </button>
+                                    {% endif %}
+                                    <a href="{{ url_for('debtors_blueprint.edit', id=debtor._id) }}" 
+                                       class="btn btn-primary btn-sm"
+                                       data-bs-toggle="tooltip" 
+                                       title="{{ trans('edit', default='Edit') }}">
+                                        {{ trans('edit', default='Edit') }}
+                                    </a>
+                                    <form action="{{ url_for('debtors_blueprint.delete', id=debtor._id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" 
+                                                onclick="return confirm('{{ trans('confirm_delete', default='Are you sure?') }}')"
+                                                data-bs-toggle="tooltip" 
+                                                title="{{ trans('delete', default='Delete') }}">
+                                            {{ trans('delete', default='Delete') }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <p class="text-muted">{{ trans('no_what_they_owe_you', default='No one owes you yet') }}</p>
+            <p class="mt-2">{{ trans('create_what_they_owe_desc', default='Start by creating your first record.') }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Debt Details Modal -->
+<div class="modal fade" id="debtDetailsModal" tabindex="-1" aria-labelledby="DebtModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="debtModalLabel">{{ trans('debt_details', default='Debt Details') }}</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="{{ trans('close', default='Close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>{{ trans('name', default='Name') }}:</strong> <span id="detailName"></span></p>
+                        <p><strong>{{ trans('amount', default='Amount') }}:</strong> <span id="amountValue"></span></p>
+                        <p><strong>Contact:</strong> <span id="contactValue"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Description:</strong> <span id="descValue"></span></p>
+                        <p><strong>{{ trans('created_at', default='Date') }}:</strong> <span id="dateValue"></span></p>
+                        <p><strong>{{ trans('reminders', default='Reminders') }}:</strong> <span id="reminderCount"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="downloadBtn">
+                    {{ trans('download_iou', default='Download IOU') }}
+                </button>
+                <button type="button" class="btn btn-info" id="shareBtn">
+                    {{ trans('share_iou', default='Share IOUs') }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ trans('close', default='Close') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="reminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reminderModalLabel">{{ trans('send_reminder', default='Send Reminder') }}</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="{{ trans('close', default='Close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reminderForm">
+                    <div class="mb-3">
+                        <label for="reminderType" class="form-label">{{ trans('reminder_type', default='Reminder Type') }}</label>
+                        <select class="form-select" id="reminderType" required>
+                            <option value="sms">{{ trans('sms', default='SMS') }}</option>
+                            <option value="whatsapp">{{ trans('whatsapp', default='WhatsApp') }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reminderMessage" class="form-label">{{ trans('message', default='Message') }}</label>
+                        <textarea class="form-control" id="reminderMessage" rows="4" required></textarea>
+                        <div class="form-text">{{ trans('reminder_cost', default='Cost: 2 coins per reminder') }}</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="sendReminderBtn">
+                    {{ trans('send_reminder', default='Send Reminder') }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ trans('cancel', default='Cancel') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Snooze Modal -->
+<div class="modal fade" id="snoozeModal" tabindex="-1" aria-labelledby="snoozeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="snoozeModalLabel">{{ trans('snooze_reminder', default='Snooze Reminder') }}</h5>
+                <button class="btn-close" data-bs-dismiss="modal" aria-label="{{ trans('close', default='Close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <form id="snoozeForm">
+                    <div class="mb-3">
+                        <label for="snoozeDays" class="form-label">{{ trans('snooze_duration', default='Snooze Duration') }}</label>
+                        <select class="form-select" id="snoozeDays" required>
+                            <option value="1">{{ trans('1_day', default='1 Day') }}</option>
+                            <option value="3">{{ trans('3_days', default='3 Days') }}</option>
+                            <option value="7">{{ trans('7_days', default='7 Days') }}</option>
+                            <option value="14">{{ trans('14_days', default='14 Days') }}</option>
+                        </select>
+                        <div class="form-text">{{ trans('snooze_cost', default='Cost: 1 coin per snooze') }}</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="snoozeReminderBtn">
+                    {{ trans('snooze', default='Snooze') }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    {{ trans('cancel', default='Cancel') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+    let currentDebtData = null;
+
+    // Reminder button functionality
+    document.querySelectorAll('.reminder-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const name = button.dataset.name;
+            const amount = parseFloat(button.dataset.amount).toLocaleString();
+            const date = button.dataset.date;
+            const contact = button.dataset.contact;
+            
+            currentDebtData = {
+                _id: button.dataset.id,
+                name,
+                amount_owed: button.dataset.amount,
+                contact,
+                created_at: date
+            };
+            
+            const defaultMessage = `Hi ${name}, just a reminder you owe {{ trans('currency_symbol', default='₦') }}${amount} recorded on FiCore Records (${date}). Please settle soon.`;
+            document.getElementById('reminderMessage').value = defaultMessage;
+            
+            new bootstrap.Modal(document.getElementById('reminderModal')).show();
+        });
+    });
+
+    // Send reminder functionality
+    document.getElementById('sendReminderBtn').addEventListener('click', function() {
+        if (!currentDebtData) return;
+        
+        const reminderType = document.getElementById('reminderType').value;
+        const message = document.getElementById('reminderMessage').value;
+        
+        if (!message.trim()) {
+            alert('{{ trans('message_required', default='Message is required') }}');
+            return;
+        }
+        
+        this.disabled = true;
+        this.textContent = '{{ trans('sending', default='Sending...') }}';
+        
+        fetch('/debtors/send_reminder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                debtId: currentDebtData._id,
+                recipient: currentDebtData.contact,
+                message,
+                type: reminderType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('{{ trans('reminder_sent_successfully', default='Reminder sent successfully') }}');
+                bootstrap.Modal.getInstance(document.getElementById('reminderModal')).hide();
+                location.reload();
+            } else {
+                alert('{{ trans('failed_to_send_reminder', default='Failed to send reminder') }}: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error sending reminder:', error);
+            alert('{{ trans('error_sending_reminder', default='Error sending reminder') }}');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = '{{ trans('send_reminder', default='Send Reminder') }}';
+        });
+    });
+
+    // Snooze button functionality
+    document.querySelectorAll('.snooze-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            currentDebtData = {
+                _id: button.dataset.id,
+                name: button.dataset.name
+            };
+            
+            new bootstrap.Modal(document.getElementById('snoozeModal')).show();
+        });
+    });
+
+    // Snooze reminder functionality
+    document.getElementById('snoozeReminderBtn').addEventListener('click', function() {
+        if (!currentDebtData) return;
+        
+        const snoozeDays = parseInt(document.getElementById('snoozeDays').value);
+        
+        this.disabled = true;
+        this.textContent = '{{ trans('snoozing', default='Snoozing...') }}';
+        
+        fetch('/debtors/send_reminder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                debtId: currentDebtData._id,
+                snooze_days: snoozeDays
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('{{ trans('snooze_set_successfully', default='Snooze set successfully') }}');
+                bootstrap.Modal.getInstance(document.getElementById('snoozeModal')).hide();
+                location.reload();
+            } else {
+                alert('{{ trans('failed_to_set_snooze', default='Failed to set snooze') }}: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error setting snooze:', error);
+            alert('{{ trans('error_setting_snooze', default='Error setting snooze') }}');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.textContent = '{{ trans('snooze', default='Snooze') }}';
+        });
+    });
+
+    // Share IOU functionality
+    document.querySelectorAll('.share-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const debtId = button.dataset.id;
+            const contact = button.dataset.contact;
+            
+            if (!contact) {
+                alert('{{ trans('no_contact', default='No contact provided for sharing') }}');
+                return;
+            }
+            
+            fetch(`/debtors/share/${debtId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.open(data.whatsapp_link, '_blank');
+                    } else {
+                        alert('{{ trans('failed_to_share_iou', default='Failed to share IOU') }}: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sharing IOU:', error);
+                    alert('{{ trans('error_sharing_iou', default='Error sharing IOU') }}');
+                });
+        });
+    });
+
+    // Modal share IOU functionality
+    document.getElementById('shareBtn').addEventListener('click', () => {
+        if (currentDebtData && currentDebtData.contact) {
+            fetch(`/debtors/share/${currentDebtData._id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.open(data.whatsapp_link, '_blank');
+                    } else {
+                        alert('{{ trans('failed_to_share_iou', default='Failed to share IOU') }}: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sharing IOU:', error);
+                    alert('{{ trans('error_sharing_iou', default='Error sharing IOU') }}');
+                });
+        } else {
+            alert('{{ trans('no_contact', default='No contact provided for sharing') }}');
+        }
+    });
+
+    // Modal download IOU functionality
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        if (currentDebtData) {
+            window.location.href = `/debtors/generate_iou/${currentDebtData._id}`;
+        }
+    });
+});
+</script>
+{% endblock %}

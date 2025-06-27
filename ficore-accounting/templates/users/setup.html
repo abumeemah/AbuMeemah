@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}
+{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}
+{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <div class="form-container card p-4">
+        <h2 class="card-title text-center mb-4">{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}</h2>
+        <p class="text-center text-muted mb-4">{{ trans('provide_business_details', default='Please provide your business details to complete the setup.') | escape }}</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message | escape }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ trans('close', default='Close') | escape }}"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group mb-3">
+                {{ form.business_name.label(class="form-label") | safe }}
+                {{ form.business_name(class="form-control" + (" is-invalid" if form.business_name.errors else ""), required=True, **{"aria-describedby": "businessNameFeedback" if form.business_name.errors else ""}) | safe }}
+                {% if form.business_name.errors %}
+                    <div id="businessNameFeedback" class="invalid-feedback">
+                        {% for error in form.business_name.errors %}
+                            {{ error | escape }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.address.label(class="form-label") | safe }}
+                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=4, required=True, **{"aria-describedby": "addressFeedback" if form.address.errors else ""}) | safe }}
+                {% if form.address.errors %}
+                    <div id="addressFeedback" class="invalid-feedback">
+                        {% for error in form.address.errors %}
+                            {{ error | escape }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-4">
+                {{ form.industry.label(class="form-label") | safe }}
+                {{ form.industry(class="form-control" + (" is-invalid" if form.industry.errors else ""), required=True, **{"aria-describedby": "industryFeedback" if form.industry.errors else ""}) | safe }}
+                {% if form.industry.errors %}
+                    <div id="industryFeedback" class="invalid-feedback">
+                        {% for error in form.industry.errors %}
+                            {{ error | escape }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row g-2">
+                <div class="col-12 col-md-6 mx-auto">
+                    {{ form.submit(class="btn btn-primary w-100", **{"aria-label": trans('submit', default='Submit business details') | escape}) | safe }}
+                </div>
+                <div class="col-12 col-md-6 mx-auto">
+                    {{ form.back(class="btn btn-secondary w-100", **{"aria-label": trans('back', default='Go back') | escape}) | safe }}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    // Bootstrap form validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

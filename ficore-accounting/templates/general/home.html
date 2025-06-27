@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+{% block title %}{{ trans('home') | default('Home') }}{% endblock %}
+{% block content %}
+<div class="container">
+    {% if current_user.is_authenticated %}
+        <div class="top-header d-flex justify-content-between align-items-center mb-4">
+            <div class="welcome-section">
+                <h2 class="welcome-text mb-0">{{ trans('hello_user', default='Hello') }}, {{ current_user.display_name | default(current_user.id) }}!</h2>
+                <small class="text-muted">{{ trans('welcome_back', default='Welcome back to Ficore Records') }}</small>
+            </div>
+            <div class="header-actions d-flex align-items-center gap-3">
+                <a href="{{ url_for('settings_blueprint.profile') }}" class="profile-icon">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+                <div class="header-toggles d-flex align-items-center gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ session.get('lang', 'EN').upper() }}
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="langDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang='en') }}">English</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang='ha') }}">Hausa</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" id="quickDarkModeToggle" onclick="toggleDarkMode()" aria-label="{{ trans('mode_toggle_dark', default='Toggle dark mode') }}">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="financial-summary mb-4">
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <div class="summary-card debt-card">
+                        <div class="card-header">
+                            <i class="bi bi-arrow-up-circle text-danger"></i>
+                            <span>{{ trans('i_owe', default='I Owe') }}</span>
+                        </div>
+                        <div class="card-amount text-danger" id="totalIOwe">
+                            <span class="currency-symbol">₦</span>
+                            <span class="amount-value" data-amount="0">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="summary-card credit-card">
+                        <div class="card-header">
+                            <i class="bi bi-arrow-down-circle text-success"></i>
+                            <span>{{ trans('i_am_owed', default='I Am Owed') }}</span>
+                        </div>
+                        <div class="card-amount text-success" id="totalIAmOwed">
+                            <span class="currency-symbol">₦</span>
+                            <span class="amount-value" data-amount="0">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="net-position-card mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="net-position-info">
+                        <span class="net-label">{{ trans('net_position', default='Net Position') }}:</span>
+                        <span class="net-amount" id="netPosition">₦0</span>
+                        <span class="net-status" id="netStatus"></span>
+                    </div>
+                    <button class="visibility-toggle" onclick="toggleAmountVisibility()">
+                        <i class="bi bi-eye" id="visibilityIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <a href="{{ url_for('dashboard_blueprint.index') }}" class="btn btn-outline-primary btn-sm">
+                    {{ trans('view_detailed_summary', default='View Detailed Summary') }}
+                    <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="financial-snapshots mb-4">
+            <div class="stat-cards-container">
+                <div class="stat-card">
+                    <div class="snapshot-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="snapshot-info">
+                        <div class="snapshot-label">{{ trans('wallet_balance', default='Wallet') }}</div>
+                        <div class="stat-card-value" id="walletBalance">₦0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="snapshot-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="snapshot-info">
+                        <div class="snapshot-label">{{ trans('net_cashflow_mtd', default='Net Flow') }}</div>
+                        <div class="stat-card-value" id="netCashflow">₦0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="snapshot-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div class="snapshot-info">
+                        <div class="snapshot-label">{{ trans('inventory_value', default='Inventory') }}</div>
+                        <div class="stat-card-value" id="inventoryValue">₦0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions mb-4">
+            <h3 class="section-title">{{ trans('quick_actions', default='Quick Actions') }}</h3>
+            <div class="actions-grid">
+                <a href="{{ url_for('creditors_blueprint.add') }}" class="action-card cta-creditor-card">
+                    <div class="action-icon">
+                        <i class="bi bi-person-dash"></i>
+                    </div>
+                    <div class="action-label">{{ trans('add_new_creditor', default='Add New I Owe') }}</div>
+                </a>
+                <a href="{{ url_for('debtors_blueprint.add') }}" class="action-card cta-debtor-card">
+                    <div class="action-icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="action-label">{{ trans('add_new_debtor', default='Add New They Owe') }}</div>
+                </a>
+
+                <a href="{{ url_for('receipts_blueprint.add') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                    <div class="action-label">{{ trans('money_in', default='Money In') }}</div>
+                </a>
+                <a href="{{ url_for('payments_blueprint.add') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                    <div class="action-label">{{ trans('money_out', default='Money Out') }}</div>
+                </a>
+                <a href="{{ url_for('inventory_blueprint.add') }}" class="action-card">
+                    <div class="action-icon">
+                        <i class="bi bi-box"></i>
+                    </div>
+                    <div class="action-label">{{ trans('add_inventory', default='Add Item') }}</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="recent-activity mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="section-title mb-0">{{ trans('recent_activity', default='Recent Activity') }}</h3>
+                <a href="{{ url_for('dashboard_blueprint.index') }}" class="btn btn-link btn-sm p-0">
+                    {{ trans('view_all', default='View All') }}
+                </a>
+            </div>
+            <div class="activity-list" id="recentActivityList">
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="bi bi-plus-circle text-success"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-description">{{ trans('loading_activities', default='Loading recent activities...') }}</div>
+                        <div class="activity-time text-muted">{{ trans('just_now', default='Just now') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-cards">
+            <h3 class="section-title mb-3">{{ trans('explore_features', default='Explore Features') }}</h3>
+            <div class="row g-3">
+                {% if current_user.get('is_admin', False) %}
+                    <div class="col-6 col-md-4">
+                        <div class="nav-card">
+                            <div class="nav-card-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <div class="nav-card-content">
+                                <h4>{{ trans('admin_dashboard', default='Admin Dashboard') }}</h4>
+                                <p>{{ trans('admin_dashboard_desc', default='Manage users and settings') }}</p>
+                            </div>
+                            <a href="{{ url_for('admin_blueprint.dashboard') }}" class="nav-card-link"></a>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="col-6 col-md-4">
+                    <div class="nav-card">
+                        <div class="nav-card-icon">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                        <div class="nav-card-content">
+                            <h4>{{ trans('reports', default='Reports') }}</h4>
+                            <p>{{ trans('reports_desc', default='Business insights') }}</p>
+                        </div>
+                        <a href="{{ url_for('reports_blueprint.index') }}" class="nav-card-link"></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="nav-card">
+                        <div class="nav-card-icon">
+                            <i class="bi bi-coin"></i>
+                        </div>
+                        <div class="nav-card-content">
+                            <h4>{{ trans('your_wallet', default='Your Wallet') }}</h4>
+                            <p>{{ trans('wallet_desc', default='Manage coins') }}</p>
+                        </div>
+                        <a href="{{ url_for('coins_blueprint.history') }}" class="nav-card-link"></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="nav-card">
+                        <div class="nav-card-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="nav-card-content">
+                            <h4>{{ trans('cashflow_analysis', default='Cashflow') }}</h4>
+                            <p>{{ trans('cashflow_desc', default='Track money flow') }}</p>
+                        </div>
+                        <a href="{{ url_for('dashboard_blueprint.index') }}" class="nav-card-link"></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="nav-card">
+                        <div class="nav-card-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="nav-card-content">
+                            <h4>{{ trans('inventory_management', default='Inventory') }}</h4>
+                            <p>{{ trans('inventory_desc', default='Stock management') }}</p>
+                        </div>
+                        <a href="{{ url_for('inventory_blueprint.index') }}" class="nav-card-link"></a>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="nav-card">
+                        <div class="nav-card-icon">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <div class="nav-card-content">
+                            <h4>{{ trans('feedback', default='Feedback') }}</h4>
+                            <p>{{ trans('feedback_desc', default='Share your thoughts') }}</p>
+                        </div>
+                        <a href="{{ url_for('feedback') }}" class="nav-card-link"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="text-center">
+            <div class="page-title">
+                <h1>{{ trans('welcome') | default('Welcome to Ficore Records') }}</h1>
+                <small class="subtext">{{ trans('welcome_desc') | default('Ficore Records helps you manage your debtors, creditors, receipts, and payments with ease. Streamline your financial tracking and gain clearer insights into your business\'s health.') }}</small>
+            </div>
+            <div class="mt-4">
+                <a href="{{ url_for('users_blueprint.signup') }}" class="btn btn-primary btn-lg mx-2">{{ trans('signup') | default('Sign Up') }}</a>
+                <a href="{{ url_for('users_blueprint.login') }}" class="btn btn-secondary btn-lg mx-2">{{ trans('login') | default('Log In') }}</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% if current_user.is_authenticated %}
+<nav class="bottom-navigation">
+    <div class="nav-container">
+        <a href="{{ url_for('index') }}" class="nav-item active">
+            <i class="bi bi-house"></i>
+            <span>{{ trans('home', default='Home') }}</span>
+        </a>
+        <a href="{{ url_for('dashboard_blueprint.index') }}" class="nav-item">
+            <i class="bi bi-list-ul"></i>
+            <span>{{ trans('debts', default='Debts') }}</span>
+        </a>
+        <a href="{{ url_for('receipts_blueprint.index') }}" class="nav-item">
+            <i class="bi bi-arrow-left-right"></i>
+            <span>{{ trans('cashflow', default='Cashflow') }}</span>
+        </a>
+        <a href="{{ url_for('inventory_blueprint.index') }}" class="nav-item">
+            <i class="bi bi-box-seam"></i>
+            <span>{{ trans('inventory', default='Inventory') }}</span>
+        </a>
+        <a href="{{ url_for('settings_blueprint.profile') }}" class="nav-item">
+            <i class="bi bi-person"></i>
+            <span>{{ trans('profile', default='Profile') }}</span>
+        </a>
+    </div>
+</nav>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!{{ current_user.is_authenticated | tojson }}) return;
+    
+    let amountsVisible = true;
+    
+    // Define translation strings as JavaScript variables
+    const translations = {
+        just_now: '{{ trans("just_now", default="Just now") }}',
+        minutes_ago: '{{ trans("minutes_ago", default="m ago") }}',
+        hours_ago: '{{ trans("hours_ago", default="h ago") }}',
+        days_ago: '{{ trans("days_ago", default="d ago") }}',
+        owed_to_you: '{{ trans("owed_to_you", default="Owed to you") }}',
+        you_owe: '{{ trans("you_owe", default="You owe") }}',
+        balanced: '{{ trans("balanced", default="Balanced") }}',
+        notifications_feature_coming_soon: '{{ trans("notifications_feature_coming_soon", default="Notifications feature coming soon!") }}',
+        no_recent_activity: '{{ trans("no_recent_activity", default="No recent activity") }}',
+        start_by_adding_debt: '{{ trans("start_by_adding_debt", default="Start by adding a debt or transaction") }}'
+    };
+    
+    // Load financial data and notifications
+    loadFinancialSummary();
+    loadRecentActivity();
+    
+    function loadFinancialSummary() {
+        Promise.all([
+            fetch('/api/debt-summary').then(r => r.json()).catch(() => ({totalIOwe: 0, totalIAmOwed: 0})),
+            fetch('/coins/balance').then(r => r.json()).catch(() => ({coin_balance: 0})),
+            fetch('/api/cashflow-summary').then(r => r.json()).catch(() => ({netCashflow: 0})),
+            fetch('/api/inventory-summary').then(r => r.json()).catch(() => ({totalValue: 0}))
+        ]).then(([debtData, walletData, cashflowData, inventoryData]) => {
+            updateDebtSummary(debtData);
+            updateSnapshots(walletData, cashflowData, inventoryData);
+        }).catch(error => {
+            console.error('Error loading financial data:', error);
+        });
+    }
+    
+    function updateDebtSummary(data) {
+        const totalIOwe = data.totalIOwe || 0;
+        const totalIAmOwed = data.totalIAmOwed || 0;
+        const netPosition = totalIAmOwed - totalIOwe;
+        
+        document.querySelector('#totalIOwe .amount-value').textContent = formatCurrency(totalIOwe);
+        document.querySelector('#totalIOwe .amount-value').dataset.amount = totalIOwe;
+        
+        document.querySelector('#totalIAmOwed .amount-value').textContent = formatCurrency(totalIAmOwed);
+        document.querySelector('#totalIAmOwed .amount-value').dataset.amount = totalIAmOwed;
+        
+        const netPositionEl = document.getElementById('netPosition');
+        const netStatusEl = document.getElementById('netStatus');
+        
+        netPositionEl.textContent = '₦' + formatCurrency(Math.abs(netPosition));
+        netPositionEl.dataset.amount = netPosition;
+        
+        if (netPosition > 0) {
+            netPositionEl.className = 'net-amount text-success';
+            netStatusEl.textContent = `(${translations.owed_to_you})`;
+            netStatusEl.className = 'net-status text-success';
+        } else if (netPosition < 0) {
+            netPositionEl.className = 'net-amount text-danger';
+            netStatusEl.textContent = `(${translations.you_owe})`;
+            netStatusEl.className = 'net-status text-danger';
+        } else {
+            netPositionEl.className = 'net-amount text-muted';
+            netStatusEl.textContent = `(${translations.balanced})`;
+            netStatusEl.className = 'net-status text-muted';
+        }
+    }
+    
+    function updateSnapshots(walletData, cashflowData, inventoryData) {
+        document.getElementById('walletBalance').textContent = '₦' + formatCurrency(walletData.coin_balance || 0);
+        document.getElementById('netCashflow').textContent = '₦' + formatCurrency(cashflowData.netCashflow || 0);
+        document.getElementById('inventoryValue').textContent = '₦' + formatCurrency(inventoryData.totalValue || 0);
+    }
+    
+    function loadRecentActivity() {
+        fetch('/api/recent-activity')
+            .then(response => response.json())
+            .then(activities => {
+                const activityList = document.getElementById('recentActivityList');
+                if (activities && activities.length > 0) {
+                    activityList.innerHTML = activities.map(activity => `
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="bi ${getActivityIcon(activity.type)} ${getActivityColor(activity.type)}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-description">${activity.description}</div>
+                                <div class="activity-time text-muted">${formatTimeAgo(activity.timestamp)}</div>
+                            </div>
+                            ${activity.amount ? `<div class="activity-amount">${formatCurrency(activity.amount)}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    activityList.innerHTML = `
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="bi bi-info-circle text-muted"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-description">${translations.no_recent_activity}</div>
+                                <div class="activity-time text-muted">${translations.start_by_adding_debt}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent activity:', error);
+            });
+    }
+    
+    function getActivityIcon(type) {
+        const icons = {
+            'debt_added': 'bi-plus-circle',
+            'debt_settled': 'bi-check-circle',
+            'money_in': 'bi-arrow-down-circle',
+            'money_out': 'bi-arrow-up-circle',
+            'inventory_added': 'bi-box',
+            'reminder_sent': 'bi-bell'
+        };
+        return icons[type] || 'bi-circle';
+    }
+    
+    function getActivityColor(type) {
+        const colors = {
+            'debt_added': 'text-primary',
+            'debt_settled': 'text-success',
+            'money_in': 'text-success',
+            'money_out': 'text-danger',
+            'inventory_added': 'text-info',
+            'reminder_sent': 'text-warning'
+        };
+        return colors[type] || 'text-muted';
+    }
+    
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-NG', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+    
+    function formatTimeAgo(timestamp) {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diffInSeconds = Math.floor((now - time) / 1000);
+        
+        if (diffInSeconds < 60) return translations.just_now;
+        if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + translations.minutes_ago;
+        if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + translations.hours_ago;
+        return Math.floor(diffInSeconds / 86400) + translations.days_ago;
+    }
+    
+    // Global functions
+    window.toggleAmountVisibility = function() {
+        amountsVisible = !amountsVisible;
+        const icon = document.getElementById('visibilityIcon');
+        const amounts = document.querySelectorAll('.amount-value, .net-amount, .stat-card-value');
+        
+        amounts.forEach(el => {
+            if (amountsVisible) {
+                if (el.classList.contains('amount-value')) {
+                    el.textContent = formatCurrency(el.dataset.amount);
+                } else if (el.classList.contains('net-amount')) {
+                    el.textContent = '₦' + formatCurrency(Math.abs(el.dataset.amount));
+                } else if (el.classList.contains('stat-card-value')) {
+                    el.textContent = el.dataset.originalText || el.textContent;
+                }
+            } else {
+                if (!el.dataset.originalText) {
+                    el.dataset.originalText = el.textContent;
+                }
+                el.textContent = '****';
+            }
+        });
+        
+        icon.className = amountsVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
+    };
+});
+</script>
+{% endblock %}

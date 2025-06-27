@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ trans('core_about') | default('About') }}{% endblock %}
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">{{ trans('core_about_records') | default('About Ficore Records') }}</h1>
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">
+                {{ trans('about_description') | default('Ficore Records is a simplified software designed to empower small and medium enterprises (SMEs) across Africa with efficient financial record-keeping. Since 2025, we have been committed to making financial management accessible and intuitive.') }}
+            </p>
+            <p class="card-text">
+                {{ trans('about_mission') | default('Our mission is to provide SMEs with tools to streamline invoicing, track transactions, and manage profiles, all while maintaining simplicity and affordability.') }}
+            </p>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    {{ trans('core_back_to_home') | default('Back to Home') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

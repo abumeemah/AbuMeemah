@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}{{ trans('contact_title', default='Contact Us') }}{% endblock %}
+{% block content %}
+<div class="contact-page py-5">
+    <div class="container">
+        <h1 class="text-center mb-4">{{ trans('contact_title', default='Contact Us') }}</h1>
+        <p class="text-center mb-5">{{ trans('contact_intro', default='Get in touch with FiCore Africa through the following channels:') }}</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-envelope-fill me-3"></i>
+                        <div>
+                            <strong>{{ trans('email_label', default='Email') }}</strong><br>
+                            <a href="mailto:ficoreafrica@gmail.com">ficoreafrica@gmail.com</a>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-facebook me-3"></i>
+                        <div>
+                            <strong>{{ trans('facebook_label', default='Facebook') }}</strong><br>
+                            <a href="https://www.facebook.com/profile.php?id=61575627944628&mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer">FiCore Africa</a>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex align-items-center">
+                        <i class="bi bi-linkedin me-3"></i>
+                        <div>
+                            <strong>{{ trans('linkedin_label', default='LinkedIn') }}</strong><br>
+                            <a href="https://www.linkedin.com/in/ficore-africa-58913a363/" target="_blank" rel="noopener noreferrer">FiCore Africa</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    // Enhanced language toggle to handle redirect response
+    function toggleLanguage() {
+        fetch('{{ url_for("set_language", lang="ha" if session.get("lang", "en") == "en" else "en") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lang: '{{ "ha" if session.get("lang", "en") == "en" else "en" }}' })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Language toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Language toggle error:', error));
+    }
+
+    // Enhanced dark mode toggle to handle 204 response
+    function toggleDarkMode() {
+        fetch('{{ url_for("set_dark_mode") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dark_mode: !{{ session.get('dark_mode', False) | tojson }} })
+        }).then(response => {
+            if (response.ok) {
+                document.documentElement.classList.toggle('dark-mode');
+                window.location.reload();
+            } else {
+                console.error('Dark mode toggle failed:', response.status);
+            }
+        }).catch(error => console.error('Dark mode toggle error:', error));
+    }
+</script>
+{% endblock %}

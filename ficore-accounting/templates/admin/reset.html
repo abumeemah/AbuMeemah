@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}
+{{ trans_function('credit_coins', default='Credit Coins') }} - FiCore
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{{ trans_function('credit_coins', default='Credit Coins') }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('admin_blueprint.credit_coins') }}" method="POST" class="row g-3">
+        {{ form.hidden_tag() }}
+        <div class="col-12">
+            <label for="{{ form.user_id.id }}" class="form-label">{{ trans_function('user_id', default='User ID') }}</label>
+            {{ form.user_id(class="form-control") }}
+            {% if form.user_id.errors %}
+                {% for error in form.user_id.errors %}
+                    <p class="text-danger mt-1">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <label for="{{ form.amount.id }}" class="form-label">{{ trans_function('coin_amount', default='Coin Amount') }}</label>
+            {{ form.amount(class="form-control") }}
+            {% if form.amount.errors %}
+                {% for error in form.amount.errors %}
+                    <p class="text-danger mt-1">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="col-12">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}
