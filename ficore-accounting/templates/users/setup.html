@@ -1,118 +1,92 @@
-{% extends 'base.html' %}
-{% block title %}{{ trans('create_account') | default('Sign Up') }}{% endblock %}
+{% extends "base.html" %}
+{% block title %}
+{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}
+{% endblock %}
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-center mb-4">{{ trans('create_account') | default('Sign Up') }}</h1>
-    <div class="card mx-auto" style="max-width: 400px;">
-        <div class="card-body">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="alert alert-{{ messages[0][1] }} alert-dismissible fade show" role="alert">
-                        {{ messages[0][0] }}
-                        {% if messages[0][1] in ['danger', 'error'] %}
-                            <p>{{ trans('check_details', default='Please check your email and username for typos (e.g., ensure you used @gmail.com, not @gmai.com).') }}</p>
-                        {% endif %}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="form-container card p-4">
+        <h2 class="card-title text-center mb-4">{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}</h2>
+        <p class="text-center text-muted mb-4">{{ trans('provide_business_details', default='Please provide your business details to complete the setup.') | escape }}</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message | escape }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ trans('close', default='Close') | escape }}"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group mb-3">
+                {{ form.business_name.label(class="form-label") | safe }}
+                {{ form.business_name(class="form-control" + (" is-invalid" if form.business_name.errors else ""), required=True, **{"aria-describedby": "businessNameFeedback" if form.business_name.errors else ""}) | safe }}
+                {% if form.business_name.errors %}
+                    <div id="businessNameFeedback" class="invalid-feedback">
+                        {% for error in form.business_name.errors %}
+                            {{ error | escape }}<br>
+                        {% endfor %}
                     </div>
                 {% endif %}
-            {% endwith %}
-            <form class="validate-form needs-validation" method="POST" action="{{ url_for('users_blueprint.signup') }}" novalidate>
-                {{ form.hidden_tag() }}
-                <div class="form-group mb-3">
-                    {{ form.username.label(class="form-label") | safe }}
-                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), value=form.username.data or '', required=True) | safe }}
-                    {% if form.username.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.username.errors %}
-                                {{ error | escape }}<br>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.address.label(class="form-label") | safe }}
+                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=4, required=True, **{"aria-describedby": "addressFeedback" if form.address.errors else ""}) | safe }}
+                {% if form.address.errors %}
+                    <div id="addressFeedback" class="invalid-feedback">
+                        {% for error in form.address.errors %}
+                            {{ error | escape }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-4">
+                {{ form.industry.label(class="form-label") | safe }}
+                {{ form.industry(class="form-select" + (" is-invalid" if form.industry.errors else ""), required=True, **{"aria-describedby": "industryFeedback" if form.industry.errors else ""}) | safe }}
+                {% if form.industry.errors %}
+                    <div id="industryFeedback" class="invalid-feedback">
+                        {% for error in form.industry.errors %}
+                            {{ error | escape }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row g-2">
+                <div class="col-12 col-md-6 mx-auto">
+                    {{ form.submit(class="btn btn-primary w-100", **{"aria-label": trans('submit', default='Submit business details') | escape}) | safe }}
                 </div>
-                <div class="form-group mb-3">
-                    {{ form.email.label(class="form-label") | safe }}
-                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), value=form.email.data or '', required=True) | safe }}
-                    {% if form.email.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.email.errors %}
-                                {{ error | escape }}<br>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+                <div class="col-12 col-md-6 mx-auto">
+                    {{ form.back(class="btn btn-secondary w-100", **{"aria-label": trans('back', default='Go back') | escape}) | safe }}
                 </div>
-                <div class="form-group mb-3 position-relative">
-                    {{ form.password.label(class="form-label") | safe }}
-                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True) | safe }}
-                    <span class="password-toggle" onclick="togglePassword('password', 'toggle-password-icon')">
-                        <i class="bi bi-eye" id="toggle-password-icon"></i>
-                    </span>
-                    {% if form.password.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.password.errors %}
-                                {{ error | escape }}<br>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="form-group mb-3">
-                    {{ form.role.label(class="form-label") | safe }}
-                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), required=True) | safe }}
-                    {% if form.role.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.role.errors %}
-                                {{ error | escape }}<br>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="form-group mb-3">
-                    {{ form.language.label(class="form-label") | safe }}
-                    {{ form.language(class="form-select" + (" is-invalid" if form.language.errors else ""), required=True) | safe }}
-                    {% if form.language.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.language.errors %}
-                                {{ error | escape }}<br>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary">{{ trans('create_account') | default('Sign Up') }}</button>
-                </div>
-                <div class="text-center mt-3">
-                    <a href="{{ url_for('users_blueprint.login') }}">{{ trans('already_have_account') | default('Already have an account? Sign In') }}</a>
-                </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
+{% endblock %}
+{% block extra_scripts %}
 <script>
-function togglePassword(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
-    }
-}
-// Bootstrap form validation
-(function () {
-    'use strict';
-    const forms = document.querySelectorAll('.needs-validation');
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        }, false);
-    });
-})();
+    // Bootstrap form validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
 </script>
 {% endblock %}
