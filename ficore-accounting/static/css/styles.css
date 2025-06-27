@@ -134,7 +134,7 @@ body {
     display: flex;
     flex-direction: column;
     line-height: 1.65;
-    letter-spacing: -0.01em;
+    honour-spacing: -0.01em;
 }
 
 @media (min-width: 769px) {
@@ -406,11 +406,11 @@ h3 { font-size: 1.25rem; }
     margin-bottom: 1.5rem;
 }
 
-/* Renamed from .actions-grid to .actions-container for semantic clarity with this layout */
-.actions-container {
+/* Actions Container and Grid */
+.actions-container, .actions-grid {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping on smaller screens if too many items */
-    gap: 1rem; /* Consistent gap between all cards */
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 /* Base styles for all action cards */
@@ -423,11 +423,11 @@ h3 { font-size: 1.25rem; }
     border-radius: 0.75rem;
     transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
     font-weight: 500;
-    padding: 0.75rem; /* Base padding for all cards */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Base shadow for all cards */
-    flex-grow: 1; /* Allow cards to grow and shrink */
-    flex-basis: auto; /* Default auto basis */
-    min-width: 0; /* Important for flex items */
+    padding: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex-grow: 1;
+    flex-basis: auto;
+    min-width: 0;
 }
 
 .action-card:hover {
@@ -439,15 +439,15 @@ h3 { font-size: 1.25rem; }
 .cta-creditor-card {
     background: linear-gradient(135deg, rgba(184, 138, 68, 0.8) 60%, rgba(145, 114, 67, 0.9) 100%);
     color: #fff;
-    border: none; /* No border for primary cards */
-    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08); /* Stronger shadow for primary cards */
-    filter: brightness(1); /* Reset filter for hover effect */
-    padding: 1rem; /* Larger padding for primary cards */
+    border: none;
+    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
+    filter: brightness(1);
+    padding: 1rem;
 }
 
 .cta-debtor-card {
     background: linear-gradient(135deg, rgba(107, 114, 128, 0.8) 60%, rgba(75, 85, 99, 0.9) 100%);
-    color: #fff; /* Ensure text is white for colored cards */
+    color: #fff;
     border: none;
     box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
     filter: brightness(1);
@@ -456,79 +456,77 @@ h3 { font-size: 1.25rem; }
 
 /* Hover effects for primary CTA cards */
 .cta-creditor-card:hover {
-    transform: translateY(-2px) scale(1.02); /* Slightly less aggressive scale */
+    transform: translateY(-2px) scale(1.02);
     box-shadow: 0 12px 36px rgba(184, 138, 68, 0.25);
     filter: brightness(1.08);
 }
 
 .cta-debtor-card:hover {
-    transform: translateY(-2px) scale(1.02); /* Slightly less aggressive scale */
+    transform: translateY(-2px) scale(1.02);
     box-shadow: 0 12px 36px rgba(107, 114, 128, 0.25);
     filter: brightness(1.08);
 }
 
 /* Styling for secondary action cards (pure deep white, using variables) */
-/* Apply these after primary card styles to ensure specificity */
 .action-card:not(.cta-creditor-card):not(.cta-debtor-card) {
-    background: var(--card-bg); /* Uses white/light background from theme */
+    background: var(--card-bg);
     color: var(--text-color);
-    border: 1px solid var(--card-border); /* Border for secondary cards */
+    border: 1px solid var(--card-border);
     font-weight: 500;
 }
 
-
 /* --- Layout for Larger Screens --- */
-@media (min-width: 768px) { /* Adjust breakpoint as needed for "larger screens" */
-    .actions-container {
-        flex-wrap: nowrap; /* Prevent wrapping on larger screens */
+@media (min-width: 768px) {
+    .actions-container, .actions-grid {
+        flex-wrap: nowrap;
     }
 
     .cta-creditor-card,
     .cta-debtor-card {
-        flex-basis: 180px; /* Give primary cards a larger base width */
-        flex-grow: 1.5; /* Allow them to grow more than others */
-        max-width: 250px; /* Optional: Cap their max width */
+        flex-basis: 180px;
+        flex-grow: 1.5;
+        max-width: 250px;
     }
 
     .action-card:not(.cta-creditor-card):not(.cta-debtor-card) {
-        flex-basis: 120px; /* Give secondary cards a smaller base width */
-        flex-grow: 1; /* Allow them to grow equally among themselves */
-        max-width: 180px; /* Optional: Cap their max width */
+        flex-basis: 120px;
+        flex-grow: 1;
+        max-width: 180px;
     }
 }
 
 /* --- Layout for Smaller Screens --- */
-@media (max-width: 767px) { /* Adjust breakpoint as needed for "smaller screens" */
-    .actions-container {
-        flex-wrap: wrap; /* Allow wrapping on smaller screens if items don't fit */
-        justify-content: center; /* Center items if they wrap */
+@media (max-width: 767px) {
+    .actions-container, .actions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
     }
 
     .action-card {
-        flex-basis: calc(50% - 0.5rem); /* Two cards per row, accounting for gap */
-        /* OR */
-        /* flex-basis: 150px; /* Fixed width if you prefer, and let flex-grow handle remaining space */
-        max-width: 200px; /* To prevent them from becoming too wide on slightly larger small screens */
-        padding: 0.75rem; /* Ensure consistent padding on small screens */
-        font-size: 0.9rem; /* Adjust font size if needed for smaller cards */
+        flex: 1 1 calc(50% - 0.5rem);
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0.75rem;
+        font-size: 0.9rem;
     }
 
     .action-icon {
-        font-size: 1.8rem; /* Slightly smaller icons for smaller cards */
+        font-size: 1.8rem;
         margin-bottom: 0.4rem;
     }
 }
 
-
-/* Icon and Label styles (remain largely the same) */
+/* Icon and Label styles */
 .action-icon {
-    font-size: 2.2rem; /* Base size */
+    font-size: 2.2rem;
     margin-bottom: 0.5rem;
-    background: rgba(0, 0, 0, 0.05); /* Default light background */
-    color: var(--text-color); /* Default text color */
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
     padding: 0.5rem;
     border-radius: 50%;
-    display: flex; /* To center icon */
+    display: flex;
     align-items: center;
     justify-content: center;
 }
@@ -542,7 +540,7 @@ h3 { font-size: 1.25rem; }
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-secondary);
-    text-align: center; /* Ensure label is centered */
+    text-align: center;
 }
 
 /* Recent Activity */
@@ -1025,7 +1023,7 @@ h3 { font-size: 1.25rem; }
 }
 
 h2.card-title {
-    font-size: 1.5rem; /* Match h3.card-title */
+    font-size: 1.5rem;
 }
 
 .card-text {
@@ -1259,10 +1257,6 @@ h2.card-title {
         font-size: 1rem;
     }
 
-    .actions-grid {
-        flex-direction: column;
-    }
-
     .cta-action-cards {
         width: 100%;
     }
@@ -1416,24 +1410,24 @@ h2.card-title {
 
 /* Responsive vertical button group for action buttons */
 .responsive-btn-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 @media (max-width: 600px) {
-  .responsive-btn-group {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-  }
-  .responsive-btn-group .btn,
-  .responsive-btn-group form {
-    width: 100%;
-  }
-  .responsive-btn-group form {
-    margin-bottom: 0 !important;
-  }
+    .responsive-btn-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+    }
+    .responsive-btn-group .btn,
+    .responsive-btn-group form {
+        width: 100%;
+    }
+    .responsive-btn-group form {
+        margin-bottom: 0 !important;
+    }
 }
 
 /* Modal Styles */
