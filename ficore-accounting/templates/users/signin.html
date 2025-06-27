@@ -10,7 +10,7 @@
                     <div class="alert alert-{{ messages[0][1] }} alert-dismissible fade show" role="alert">
                         {{ messages[0][0] }}
                         {% if messages[0][1] in ['danger', 'error'] %}
-                            <p>{{ trans('check_credentials', default='Please ensure your username and password are correct. If you just registered, use the exact username and email you provided.') }}</p>
+                            <p>{{ trans('check_credentials', default='Please ensure your username andWallets are correct. If you just registered, use the exact username and email you provided.') }}</p>
                         {% endif %}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="form-group mb-3 position-relative">
                     {{ form.password.label(class="form-label") | safe }}
-                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True) | safe }}
+                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True, id="password") | safe }}
                     <span class="password-toggle" onclick="togglePassword('password', 'toggle-password-icon')">
                         <i class="bi bi-eye" id="toggle-password-icon"></i>
                     </span>
