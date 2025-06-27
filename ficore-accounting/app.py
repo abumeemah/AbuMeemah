@@ -67,9 +67,9 @@ app.config['SESSION_COOKIE_NAME'] = 'ficore_session'
 try:
     mongo_client = MongoClient(
         app.config['MONGO_URI'],
-        connect=True,  # Changed from False for fork-safety
+        connect=True,
         connectTimeoutMS=30000,
-        socketTimeoutMS=None,  # No timeout
+        socketTimeoutMS=None,
         serverSelectionTimeoutMS=5000,
         maxPoolSize=50,
         minPoolSize=10,
@@ -137,7 +137,7 @@ def load_user(user_id):
         user_data = get_mongo_db().users.find_one({'_id': user_id})
         if not user_data:
             logger.warning(f"User not found: {user_id}")
-            return None  # Critical fix for missing users
+            return None
         logger.info(f"User loaded successfully: {user_id}")
         return User(user_data['_id'], user_data['email'], user_data.get('display_name'), user_data.get('role', 'personal'))
     except Exception as e:
@@ -475,7 +475,40 @@ def setup_database(initialize=False):
                             'display_name': {'bsonType': ['string', 'null']},
                             'is_admin': {'bsonType': 'bool'},
                             'setup_complete': {'bsonType': 'bool'},
-                            'reset_token': {'bsonType': ['string', 'null']}
+                            'reset_token': {'bsonType': ['string', 'null']},
+                            'reset_token_expiry': {'bsonType': ['date', 'null']},
+                            'otp': {'bsonType': ['string', 'null']},
+                            'otp_expiry': {'bsonType': ['date', 'null']},
+                            'business_details': {
+                                'bsonType': ['object', 'null'],
+                                'properties': {
+                                    'name': {'bsonType': 'string'},
+                                    'address': {'bsonType': 'string'},
+                                    'industry': {'bsonType': 'string'},
+                                    'products_services': {'bsonType': 'string'},
+                                    'phone_number': {'bsonType': 'string'}
+                                }
+                            },
+                            'personal_details': {
+                                'bsonType': ['object', 'null'],
+                                'properties': {
+                                    'first_name': {'bsonType': 'string'},
+                                    'last_name': {'bsonType': 'string'},
+                                    'phone_number': {'bsonType': 'string'},
+                                    'address': {'bsonType': 'string'}
+                                }
+                            },
+                            'agent_details': {
+                                'bsonType': ['object', 'null'],
+                                'properties': {
+                                    'agent_name': {'bsonType': 'string'},
+                                    'agent_id': {'bsonType': 'string'},
+                                    'area': {'bsonType': 'string'},
+                                    'role': {'bsonType': 'string'},
+                                    'email': {'bsonType': 'string'},
+                                    'phone': {'bsonType': 'string'}
+                                }
+                            }
                         }
                     }
                 },
@@ -844,10 +877,12 @@ def worker_exit(server, worker):
     close_mongo_db()
     logger.info("MongoDB request context cleaned up on worker exit")
 
-# Updated before_app_request to handle session initialization and setup wizard
+# Updated before_request to handle session initialization and role-based setup wizard
 @app.before_request
 def check_wizard_completion():
-    if request.path.startswith('/static/') or request.path in ['/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt']:
+    if request.path.startswith('/static/') or request.path in [
+        '/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt'
+    ]:
         return
     if not current_user.is_authenticated:
         if request.endpoint not in [
@@ -864,7 +899,6 @@ def check_wizard_completion():
             'about',
             'contact',
             'privacy',
-            'users',
             'terms',
             'get_translations',
             'set_language'
@@ -873,20 +907,30 @@ def check_wizard_completion():
             return redirect(url_for('users_blueprint.login'))
     elif current_user.is_authenticated:
         if 'session_id' not in session:
-            return  # Sessions not initialized
+            session['session_id'] = str(uuid.uuid4())
         db = get_mongo_db()
         user = db.users.find_one({'_id': current_user.id})
         if user and not user.get('setup_complete', False):
-            if request.endpoint not in [
+            allowed_endpoints = [
+                'users_blueprint.personal_setup_wizard',
                 'users_blueprint.setup_wizard',
+                'users_blueprint.agent_setup_wizard',
                 'users_blueprint.logout',
                 'settings_blueprint.profile',
                 'coins_blueprint.purchase',
                 'coins_blueprint.get_balance',
-                'set_language',
-                'set_dark_mode'
-            ]:
-                return redirect(url_for('users_blueprint.setup_wizard'))
+                'set_language'
+            ]
+            if request.endpoint not in allowed_endpoints:
+                role = user.get('role', 'personal')
+                if role == 'personal':
+                    return redirect(url_for('users_blueprint.personal_setup_wizard'))
+                elif role == 'trader':
+                    return redirect(url_for('users_blueprint.setup_wizard'))
+                elif role == 'agent':
+                    return redirect(url_for('users_blueprint.agent_setup_wizard'))
+                else:
+                    return redirect(url_for('users_blueprint.setup_wizard'))  # Fallback
 
 with app.app_context():
     if not setup_database(initialize=False):
