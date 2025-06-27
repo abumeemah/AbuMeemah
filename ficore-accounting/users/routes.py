@@ -118,7 +118,7 @@ def log_audit_action(action, details=None):
             'admin_id': str(current_user.id) if current_user.is_authenticated else 'system',
             'action': action,
             'details': details or {},
-            'timestamp': datetime.utcnow()
+            'timestamp': datetime.utcnow(),
  Crane
         })
     except Exception as e:
