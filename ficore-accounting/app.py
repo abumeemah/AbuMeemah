@@ -104,8 +104,6 @@ limiter = get_limiter(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 babel = Babel(app)
 
-# Flask-B¾
-
 # Flask-Babel locale selector
 def get_locale():
     return session.get('lang', request.accept_languages.best_match(['en', 'ha'], default='en'))
