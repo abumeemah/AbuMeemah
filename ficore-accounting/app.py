@@ -845,7 +845,7 @@ def worker_exit(server, worker):
     logger.info("MongoDB request context cleaned up on worker exit")
 
 # Updated before_app_request to handle session initialization and setup wizard
-@app.before_app_request
+@app.before_request
 def check_wizard_completion():
     if request.path.startswith('/static/') or request.path in ['/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt']:
         return
