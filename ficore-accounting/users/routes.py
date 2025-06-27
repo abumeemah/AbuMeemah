@@ -68,7 +68,7 @@ class SignupForm(FlaskForm):
     language = SelectField(trans_function('language', default='Language'), choices=[
         ('en', trans_function('english', default='English')),
         ('ha', trans_function('hausa', default='Hausa'))
-    ], validators=[validators.DataRequired(message=trans_function('language_required', default='Language is required'))], render_kw={'class': ' Gform-select'})
+    ], validators=[validators.DataRequired(message=trans_function('language_required', default='Language is required'))], render_kw={'class': 'form-select'})
     submit = SubmitField(trans_function('signup', default='Sign Up'), render_kw={'class': 'btn btn-primary w-100'})
 
 class ForgotPasswordForm(FlaskForm):
@@ -138,17 +138,17 @@ def login():
             if not USERNAME_REGEX.match(username):
                 flash(trans_function('username_format', default='Username must be alphanumeric with underscores'), 'danger')
                 logger.warning(f"Invalid username format: {username}")
-                return render_template('users/login.html', form=form)
+                return render_template('users/login.html', form=form), 401
             db = get_mongo_db()
             user = db.users.find_one({'_id': username})
             if not user:
-                flash(trans_function('username_not_found', default='Username does not exist. Please check your signup details.'), 'danger')
+                flash(trans_function('username_not_found', default='Username does not exist.Deadlock Prevention Please check your signup details.'), 'danger')
                 logger.warning(f"Login attempt for non-existent username: {username}")
-                return render_template('users/login.html', form=form)
+                return render_template('users/login.html', form=form), 401
             if not check_password_hash(user['password'], form.password.data):
                 logger.warning(f"Failed login attempt for username: {username} (invalid password)")
                 flash(trans_function('invalid_password', default='Incorrect password'), 'danger')
-                return render_template('users/login.html', form=form)
+                return render_template('users/login.html', form=form), 401
             logger.info(f"User found: {username}, proceeding with login")
             if os.environ.get('ENABLE_2FA', 'true').lower() == 'true':
                 otp = ''.join(str(random.randint(0, 9)) for _ in range(6))
@@ -173,7 +173,6 @@ def login():
                     user_obj = User(user['_id'], user['email'], user.get('display_name'), user.get('role', 'personal'))
                     login_user(user_obj, remember=True)
                     session['lang'] = user.get('language', 'en')
-                    session['user_id'] = user['_id']  # Explicitly set user_id in session
                     log_audit_action('login_without_2fa', {'user_id': username, 'reason': 'email_failure'})
                     logger.info(f"User {username} logged in without 2FA due to email failure. Session: {session}")
                     if not user.get('setup_complete', False):
@@ -183,7 +182,6 @@ def login():
             user_obj = User(user['_id'], user['email'], user.get('display_name'), user.get('role', 'personal'))
             login_user(user_obj, remember=True)
             session['lang'] = user.get('language', 'en')
-            session['user_id'] = user['_id']  # Explicitly set user_id in session
             log_audit_action('login', {'user_id': username})
             logger.info(f"User {username} logged in successfully. Session: {session}")
             if not user.get('setup_complete', False):
@@ -221,7 +219,6 @@ def verify_2fa():
                 user_obj = User(user['_id'], user['email'], user.get('display_name'), user.get('role', 'personal'))
                 login_user(user_obj, remember=True)
                 session['lang'] = user.get('language', 'en')
-                session['user_id'] = user['_id']  # Explicitly set user_id in session
                 db.users.update_one(
                     {'_id': username},
                     {'$unset': {'otp': '', 'otp_expiry': ''}}
@@ -281,48 +278,49 @@ def signup():
                 'created_at': datetime.utcnow()
             }
 
-            # Use MongoDB transaction for user insertion and coin transaction
+            # Use MongoDB transaction with retry logic
             with client.start_session() as session:
-                with session.start_transaction():
+                for attempt in range(3):
                     try:
-                        # Insert user
-                        result = db.users.insert_one(user_data, session=session)
-                        logger.info(f"User inserted: {username}, result: {result.inserted_id}")
+                        with session.start_transaction():
+                            # Insert user
+                            result = db.users.insert_one(user_data, session=session)
+                            logger.info(f"User inserted: {username}, result: {result.inserted_id}")
 
-                        # Insert coin transaction
-                        db.coin_transactions.insert_one({
-                            'user_id': username,
-                            'amount': 10,
-                            'type': 'credit',
-                            'ref': f"SIGNUP_BONUS_{datetime.utcnow().isoformat()}",
-                            'date': datetime.utcnow()
-                        }, session=session)
+                            # Insert coin transaction
+                            db.coin_transactions.insert_one({
+                                'user_id': username,
+                                'amount': 10,
+                                'type': 'credit',
+                                'ref': f"SIGNUP_BONUS_{datetime.utcnow().isoformat()}",
+                                'date': datetime.utcnow()
+                            }, session=session)
 
-                        # Log audit action
-                        db.audit_logs.insert_one({
-                            'admin_id': 'system',
-                            'action': 'signup',
-                            'details': {'user_id': username, 'role': role},
-                            'timestamp': datetime.utcnow()
-                        }, session=session)
-
+                            # Log audit action
+                            db.audit_logs.insert_one({
+                                'admin_id': 'system',
+                                'action': 'signup',
+                                'details': {'user_id': username, 'role': role},
+                                'timestamp': datetime.utcnow()
+                            }, session=session)
+                            break  # Exit loop if successful
+                    except errors.OperationFailure as e:
+                        logger.error(f"Transaction attempt {attempt + 1} failed for {username}: {str(e)}")
+                        if attempt == 2:  # Final attempt
+                            session.abort_transaction()
+                            flash(trans_function('database_error', default='An error occurred while creating your account. Please try again later.'), 'danger')
+                            return render_template('users/signup.html', form=form), 500
                     except errors.DuplicateKeyError as e:
                         logger.error(f"Duplicate key error during signup for username {username}: {str(e)}")
                         session.abort_transaction()
                         flash(trans_function('duplicate_error', default='Username or email already exists'), 'danger')
                         return render_template('users/signup.html', form=form)
-                    except errors.PyMongoError as e:
-                        logger.error(f"MongoDB error during signup transaction for {username}: {str(e)}")
-                        session.abort_transaction()
-                        flash(trans_function('database_error', default='An error occurred while creating your account. Please try again later.'), 'danger')
-                        return render_template('users/signup.html', form=form), 500
 
             # Login user after successful transaction
             from app import User
             user_obj = User(username, email, username, role)
             login_user(user_obj, remember=True)
             session['lang'] = language
-            session['user_id'] = username  # Explicitly set user_id in session
             logger.info(f"New user created and logged in: {username} (role: {role}). Session: {session}")
             return redirect(url_for('users_blueprint.setup_wizard'))
 
@@ -419,7 +417,7 @@ def setup_wizard():
     db = get_mongo_db()
     user_id = request.args.get('user_id', current_user.id) if is_admin() and request.args.get('user_id') else current_user.id
     user = db.users.find_one({'_id': user_id})
-    if user.get('setup_complete', False):
+    if user.get('setupsetup_complete', False):
         return redirect(url_for('dashboard_blueprint.index'))
     form = BusinessSetupForm()
     if form.validate_on_submit():
@@ -489,8 +487,8 @@ def reset_password_redirect():
 @users_bp.before_app_request
 def check_wizard_completion():
     """Check if setup wizard is complete."""
-    if request.endpoint == 'static':
-        return
+    if request.path.startswith('/static/') or request.path in ['/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt']:
+        return  # Skip authentication check for static routes and specific files
     if not current_user.is_authenticated:
         if request.endpoint not in ['users_blueprint.login', 'users_blueprint.signup', 'users_blueprint.forgot_password',
                                    'users_blueprint.reset_password', 'users_blueprint.verify_2fa', 'users_blueprint.signin',
