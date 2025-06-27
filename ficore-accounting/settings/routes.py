@@ -24,6 +24,20 @@ class ProfileForm(FlaskForm):
         validators.Optional(),
         validators.Length(max=20, message=trans_function('phone_length', default='Phone number too long'))
     ], render_kw={'class': 'form-control'})
+    # Personal user fields
+    first_name = StringField(trans_function('first_name', default='First Name'), [
+        validators.Optional(),
+        validators.Length(max=50, message=trans_function('first_name_length', default='First name too long'))
+    ], render_kw={'class': 'form-control'})
+    last_name = StringField(trans_function('last_name', default='Last Name'), [
+        validators.Optional(),
+        validators.Length(max=50, message=trans_function('last_name_length', default='Last name too long'))
+    ], render_kw={'class': 'form-control'})
+    personal_address = TextAreaField(trans_function('address', default='Address'), [
+        validators.Optional(),
+        validators.Length(max=500, message=trans_function('address_length', default='Address too long'))
+    ], render_kw={'class': 'form-control'})
+    # Trader user fields
     business_name = StringField(trans_function('business_name', default='Business Name'), [
         validators.Optional(),
         validators.Length(max=100, message=trans_function('business_name_length', default='Business name too long'))
@@ -35,6 +49,27 @@ class ProfileForm(FlaskForm):
     industry = StringField(trans_function('industry', default='Industry'), [
         validators.Optional(),
         validators.Length(max=50, message=trans_function('industry_length', default='Industry name too long'))
+    ], render_kw={'class': 'form-control'})
+    products_services = StringField(trans_function('products_services', default='Products/Services'), [
+        validators.Optional(),
+        validators.Length(max=200, message=trans_function('products_services_length', default='Products/Services description too long'))
+    ], render_kw={'class': 'form-control'})
+    # Agent user fields
+    agent_name = StringField(trans_function('agent_name', default='Agent Name'), [
+        validators.Optional(),
+        validators.Length(max=100, message=trans_function('agent_name_length', default='Agent name too long'))
+    ], render_kw={'class': 'form-control'})
+    agent_id = StringField(trans_function('agent_id', default='Agent ID'), [
+        validators.Optional(),
+        validators.Length(max=50, message=trans_function('agent_id_length', default='Agent ID too long'))
+    ], render_kw={'class': 'form-control'})
+    area = StringField(trans_function('area', default='Area'), [
+        validators.Optional(),
+        validators.Length(max=100, message=trans_function('area_length', default='Area too long'))
+    ], render_kw={'class': 'form-control'})
+    agent_role = StringField(trans_function('agent_role', default='Role'), [
+        validators.Optional(),
+        validators.Length(max=50, message=trans_function('agent_role_length', default='Role too long'))
     ], render_kw={'class': 'form-control'})
     submit = SubmitField(trans_function('save_changes', default='Save Changes'), render_kw={'class': 'btn btn-primary w-100'})
 
@@ -82,10 +117,20 @@ def profile():
             form.full_name.data = user.get('display_name', user.get('_id', ''))
             form.email.data = user.get('email', '')
             form.phone.data = user.get('phone', '')
-            if user.get('business_details'):
+            if user.get('personal_details') and user.get('role') == 'personal':
+                form.first_name.data = user['personal_details'].get('first_name', '')
+                form.last_name.data = user['personal_details'].get('last_name', '')
+                form.personal_address.data = user['personal_details'].get('address', '')
+            if user.get('business_details') and user.get('role') == 'trader':
                 form.business_name.data = user['business_details'].get('name', '')
                 form.business_address.data = user['business_details'].get('address', '')
                 form.industry.data = user['business_details'].get('industry', '')
+                form.products_services.data = user['business_details'].get('products_services', '')
+            if user.get('agent_details') and user.get('role') == 'agent':
+                form.agent_name.data = user['agent_details'].get('agent_name', '')
+                form.agent_id.data = user['agent_details'].get('agent_id', '')
+                form.area.data = user['agent_details'].get('area', '')
+                form.agent_role.data = user['agent_details'].get('role', '')
         
         if form.validate_on_submit():
             try:
@@ -99,17 +144,35 @@ def profile():
                     'display_name': form.full_name.data,
                     'email': form.email.data,
                     'phone': form.phone.data,
-                    'updated_at': datetime.utcnow()
+                    'updated_at': datetime.utcnow(),
+                    'setup_complete': True
                 }
                 
-                # Update business details if provided
-                if form.business_name.data or form.business_address.data or form.industry.data:
+                # Update details based on user role
+                if user.get('role') == 'personal' and (form.first_name.data or form.last_name.data or form.personal_address.data):
+                    update_data['personal_details'] = {
+                        'first_name': form.first_name.data or '',
+                        'last_name': form.last_name.data or '',
+                        'address': form.personal_address.data or '',
+                        'phone_number': form.phone.data or ''
+                    }
+                elif user.get('role') == 'trader' and (form.business_name.data or form.business_address.data or form.industry.data or form.products_services.data):
                     update_data['business_details'] = {
                         'name': form.business_name.data or '',
                         'address': form.business_address.data or '',
-                        'industry': form.industry.data or ''
+                        'industry': form.industry.data or '',
+                        'products_services': form.products_services.data or '',
+                        'phone_number': form.phone.data or ''
                     }
-                    update_data['setup_complete'] = True
+                elif user.get('role') == 'agent' and (form.agent_name.data or form.agent_id.data or form.area.data or form.agent_role.data):
+                    update_data['agent_details'] = {
+                        'agent_name': form.agent_name.data or '',
+                        'agent_id': form.agent_id.data or '',
+                        'area': form.area.data or '',
+                        'role': form.agent_role.data or '',
+                        'phone': form.phone.data or '',
+                        'email': form.email.data or ''
+                    }
                 
                 db.users.update_one(user_query, {'$set': update_data})
                 
@@ -131,7 +194,9 @@ def profile():
             'role': user.get('role', 'personal'),
             'language': user.get('language', 'en'),
             'dark_mode': user.get('dark_mode', False),
+            'personal_details': user.get('personal_details', {}),
             'business_details': user.get('business_details', {}),
+            'agent_details': user.get('agent_details', {}),
             'settings': user.get('settings', {}),
             'security_settings': user.get('security_settings', {})
         }
