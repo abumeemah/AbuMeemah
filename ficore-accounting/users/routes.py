@@ -87,11 +87,10 @@ class ResetPasswordForm(FlaskForm):
     ], render_kw={'class': 'form-control'})
     confirm_password = PasswordField(trans_function('confirm_password', default='Confirm Password'), [
         validators.DataRequired(message=trans_function('confirm_password_required', default='Confirm password is required')),
-        validators.EqualTo('password', message=trans_function('passwords_must_match', default='Passwords must match'))
- figured:1
-        ], render_kw={'class': 'form-control'})
+        validators.EqualTo('password', message=trans_function('passwords_must_match', default='Passwords must match')),
+    ], render_kw={'class': 'form-control'})
     submit = SubmitField(trans_function('reset_password', default='Reset Password'), render_kw={'class': 'btn btn-primary w-100'})
-
+    
 class BusinessSetupForm(FlaskForm):
     business_name = StringField(trans_function('business_name', default='Business Name'),
                                validators=[validators.DataRequired(message=trans_function('business_name_required', default='Business name is required')),
