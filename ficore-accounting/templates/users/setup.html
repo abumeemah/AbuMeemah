@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container my-5">
     <div class="form-container card p-4">
-        <h2 class="card-title text-center mb-4">{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}</h2>
+        <h2 class="card-title text-center mb-4" id="setup-form-title">{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}</h2>
         <p class="text-center text-muted mb-4">{{ trans('provide_business_details', default='Please provide your business details to complete the setup.') | escape }}</p>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -21,14 +21,14 @@
             {% endif %}
         {% endwith %}
         
-        <form method="POST" class="needs-validation" novalidate>
+        <form method="POST" class="needs-validation" novalidate aria-labelledby="setup-form-title">
             {{ form.hidden_tag() }}
             
             <div class="form-group mb-3">
-                {{ form.business_name.label(class="form-label") | safe }}
-                {{ form.business_name(class="form-control" + (" is-invalid" if form.business_name.errors else ""), required=True, **{"aria-describedby": "businessNameFeedback" if form.business_name.errors else ""}) | safe }}
+                {{ form.business_name.label(class="form-label", **{"for": "business_name"}) | safe }}
+                {{ form.business_name(class="form-control" + (" is-invalid" if form.business_name.errors else ""), required=True, id="business_name", **{"aria-describedby": "businessNameFeedback" if form.business_name.errors else "", "aria-required": "true"}) | safe }}
                 {% if form.business_name.errors %}
-                    <div id="businessNameFeedback" class="invalid-feedback">
+                    <div id="businessNameFeedback" class="invalid-feedback" role="alert">
                         {% for error in form.business_name.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
@@ -37,10 +37,10 @@
             </div>
             
             <div class="form-group mb-3">
-                {{ form.address.label(class="form-label") | safe }}
-                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=4, required=True, **{"aria-describedby": "addressFeedback" if form.address.errors else ""}) | safe }}
+                {{ form.address.label(class="form-label", **{"for": "address"}) | safe }}
+                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=4, required=True, id="address", **{"aria-describedby": "addressFeedback" if form.address.errors else "", "aria-required": "true"}) | safe }}
                 {% if form.address.errors %}
-                    <div id="addressFeedback" class="invalid-feedback">
+                    <div id="addressFeedback" class="invalid-feedback" role="alert">
                         {% for error in form.address.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
@@ -49,10 +49,10 @@
             </div>
             
             <div class="form-group mb-4">
-                {{ form.industry.label(class="form-label") | safe }}
-                {{ form.industry(class="form-select" + (" is-invalid" if form.industry.errors else ""), required=True, **{"aria-describedby": "industryFeedback" if form.industry.errors else ""}) | safe }}
+                {{ form.industry.label(class="form-label", **{"for": "industry"}) | safe }}
+                {{ form.industry(class="form-select" + (" is-invalid" if form.industry.errors else ""), required=True, id="industry", **{"aria-describedby": "industryFeedback" if form.industry.errors else "", "aria-required": "true"}) | safe }}
                 {% if form.industry.errors %}
-                    <div id="industryFeedback" class="invalid-feedback">
+                    <div id="industryFeedback" class="invalid-feedback" role="alert">
                         {% for error in form.industry.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
