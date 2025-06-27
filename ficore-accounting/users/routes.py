@@ -119,7 +119,6 @@ def log_audit_action(action, details=None):
             'action': action,
             'details': details or {},
             'timestamp': datetime.utcnow(),
- Crane
         })
     except Exception as e:
         logger.error(f"Error logging audit action: {str(e)}")
