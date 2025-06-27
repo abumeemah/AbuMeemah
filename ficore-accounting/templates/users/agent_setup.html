@@ -39,13 +39,13 @@
         }
         </script>{% extends "base.html" %}
 {% block title %}
-{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}
+{{ trans('complete_agent_setup', default='Complete Agent Setup') | escape }}
 {% endblock %}
 {% block content %}
 <div class="container my-5">
     <div class="form-container card p-4">
-        <h2 class="card-title text-center mb-4" id="setup-form-title">{{ trans('complete_business_setup', default='Complete Business Setup') | escape }}</h2>
-        <p class="text-center text-muted mb-4">{{ trans('provide_business_details', default='Please provide your business details to complete the setup.') | escape }}</p>
+        <h2 class="card-title text-center mb-4" id="setup-form-title">{{ trans('complete_agent_setup', default='Complete Agent Setup') | escape }}</h2>
+        <p class="text-center text-muted mb-4">{{ trans('provide_agent_details', default='Please provide your agent details to complete the setup.') | escape }}</p>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -64,11 +64,11 @@
             {{ form.hidden_tag() }}
             
             <div class="form-group mb-3">
-                {{ form.business_name.label(class="form-label", **{"for": "business_name"}) | safe }}
-                {{ form.business_name(class="form-control" + (" is-invalid" if form.business_name.errors else ""), required=True, id="business_name", **{"aria-describedby": "businessNameFeedback" if form.business_name.errors else "", "aria-required": "true"}) | safe }}
-                {% if form.business_name.errors %}
-                    <div id="businessNameFeedback" class="invalid-feedback" role="alert">
-                        {% for error in form.business_name.errors %}
+                {{ form.agent_name.label(class="form-label", **{"for": "agent_name"}) | safe }}
+                {{ form.agent_name(class="form-control" + (" is-invalid" if form.agent_name.errors else ""), required=True, id="agent_name", **{"aria-describedby": "agentNameFeedback" if form.agent_name.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.agent_name.errors %}
+                    <div id="agentNameFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.agent_name.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
                     </div>
@@ -76,11 +76,11 @@
             </div>
             
             <div class="form-group mb-3">
-                {{ form.address.label(class="form-label", **{"for": "address"}) | safe }}
-                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=4, required=True, id="address", **{"aria-describedby": "addressFeedback" if form.address.errors else "", "aria-required": "true"}) | safe }}
-                {% if form.address.errors %}
-                    <div id="addressFeedback" class="invalid-feedback" role="alert">
-                        {% for error in form.address.errors %}
+                {{ form.agent_id.label(class="form-label", **{"for": "agent_id"}) | safe }}
+                {{ form.agent_id(class="form-control" + (" is-invalid" if form.agent_id.errors else ""), required=True, id="agent_id", **{"aria-describedby": "agentIdFeedback" if form.agent_id.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.agent_id.errors %}
+                    <div id="agentIdFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.agent_id.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
                     </div>
@@ -88,11 +88,11 @@
             </div>
             
             <div class="form-group mb-3">
-                {{ form.industry.label(class="form-label", **{"for": "industry"}) | safe }}
-                {{ form.industry(class="form-select" + (" is-invalid" if form.industry.errors else ""), required=True, id="industry", **{"aria-describedby": "industryFeedback" if form.industry.errors else "", "aria-required": "true"}) | safe }}
-                {% if form.industry.errors %}
-                    <div id="industryFeedback" class="invalid-feedback" role="alert">
-                        {% for error in form.industry.errors %}
+                {{ form.area.label(class="form-label", **{"for": "area"}) | safe }}
+                {{ form.area(class="form-control" + (" is-invalid" if form.area.errors else ""), required=True, id="area", **{"aria-describedby": "areaFeedback" if form.area.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.area.errors %}
+                    <div id="areaFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.area.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
                     </div>
@@ -100,11 +100,11 @@
             </div>
             
             <div class="form-group mb-3">
-                {{ form.products_services.label(class="form-label", **{"for": "products_services"}) | safe }}
-                {{ form.products_services(class="form-control" + (" is-invalid" if form.products_services.errors else ""), rows=4, required=True, id="products_services", **{"aria-describedby": "productsServicesFeedback" if form.products_services.errors else "", "aria-required": "true"}) | safe }}
-                {% if form.products_services.errors %}
-                    <div id="productsServicesFeedback" class="invalid-feedback" role="alert">
-                        {% for error in form.products_services.errors %}
+                {{ form.role.label(class="form-label", **{"for": "role"}) | safe }}
+                {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), required=True, id="role", **{"aria-describedby": "roleFeedback" if form.role.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.role.errors %}
+                    <div id="roleFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.role.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
                     </div>
@@ -112,11 +112,23 @@
             </div>
             
             <div class="form-group mb-3">
-                {{ form.phone_number.label(class="form-label", **{"for": "phone_number"}) | safe }}
-                {{ form.phone_number(class="form-control" + (" is-invalid" if form.phone_number.errors else ""), required=True, id="phone_number", **{"aria-describedby": "phoneNumberFeedback" if form.phone_number.errors else "", "aria-required": "true"}) | safe }}
-                {% if form.phone_number.errors %}
-                    <div id="phoneNumberFeedback" class="invalid-feedback" role="alert">
-                        {% for error in form.phone_number.errors %}
+                {{ form.email.label(class="form-label", **{"for": "email"}) | safe }}
+                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), required=True, id="email", **{"aria-describedby": "emailFeedback" if form.email.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.email.errors %}
+                    <div id="emailFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.email.errors %}
+                            {{ error | escape }}<br>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group mb-3">
+                {{ form.phone.label(class="form-label", **{"for": "phone"}) | safe }}
+                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), required=True, id="phone", **{"aria-describedby": "phoneFeedback" if form.phone.errors else "", "aria-required": "true"}) | safe }}
+                {% if form.phone.errors %}
+                    <div id="phoneFeedback" class="invalid-feedback" role="alert">
+                        {% for error in form.phone.errors %}
                             {{ error | escape }}<br>
                         {% endfor %}
                     </div>
@@ -149,7 +161,7 @@
             
             <div class="row g-2">
                 <div class="col-12 col-md-6 mx-auto">
-                    {{ form.submit(class="btn btn-primary w-100", **{"aria-label": trans('submit', default='Submit business details') | escape}) | safe }}
+                    {{ form.submit(class="btn btn-primary w-100", **{"aria-label": trans('submit', default='Submit agent details') | escape}) | safe }}
                 </div>
                 <div class="col-12 col-md-6 mx-auto">
                     {{ form.back(class="btn btn-secondary w-100", **{"aria-label": trans('back', default='Go back') | escape}) | safe }}
