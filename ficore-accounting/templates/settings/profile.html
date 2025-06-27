@@ -3,20 +3,30 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex align-items-center mb-4">
-        <a href="{{ url_for('dashboard_blueprint.index') }}" class="back-arrow me-3">&larr;</a>
+        <a href="{{ url_for('dashboard_blueprint.index') }}" class="back-arrow me-3">←</a>
         <h1>{{ trans('hello_user', default='Hello') }}, {{ user.display_name or user._id }}!</h1>
         <div class="profile-pic-container ms-auto">
             <img src="{{ url_for('static', filename='img/default_profile.png') }}" alt="Profile Picture" class="profile-pic" onerror="this.src='{{ url_for('static', filename='img/ficore_records_logo.png') }}';">
-            <span class="edit-profile-pic-icon">&#9998;</span>
+            <span class="edit-profile-pic-icon">✎</span>
         </div>
     </div>
 
-    {% if user.role == 'trader' %}
     <div class="card card-body mb-3">
-        <p class="mb-0">{{ trans('account_type', default='Account Type') }}: <strong>{{ trans('trader_account', default='Trader Account') }}</strong> 
-        <span class="info-icon" title="{{ trans('trader_account_info', default='Your trader account gives you access to all business features.') }}">ⓘ</span></p>
+        <p class="mb-0">{{ trans('account_type', default='Account Type') }}: 
+            <strong>
+                {% if user.role == 'personal' %}
+                    {{ trans('personal_account', default='Personal Account') }}
+                {% elif user.role == 'trader' %}
+                    {{ trans('trader_account', default='Trader Account') }}
+                {% elif user.role == 'agent' %}
+                    {{ trans('agent_account', default='Agent Account') }}
+                {% elif user.role == 'admin' %}
+                    {{ trans('admin_account', default='Admin Account') }}
+                {% endif %}
+            </strong> 
+            <span class="info-icon" title="{{ trans(user.role + '_account_info', default=user.role|capitalize + ' account gives you access to specific features tailored to your role.') }}">ⓘ</span>
+        </p>
     </div>
-    {% endif %}
 
     <div class="d-grid mb-4">
         <button class="btn btn-outline-primary" onclick="location.href='{{ url_for('feedback') }}'">
@@ -31,7 +41,7 @@
                 {{ form.csrf_token }}
 
                 <div class="form-group mb-3">
-                    <label for="full_name" class="form-label">{{ trans('full_name', default='Full name') }}</label>
+                    <label for="full_name" class="form-label">{{ trans('full_name', default='Full Name') }}</label>
                     {{ form.full_name(placeholder=trans('full_name_placeholder', default='Enter your full name')) }}
                     {% if form.full_name.errors %}
                         {% for error in form.full_name.errors %}
@@ -41,7 +51,7 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="phone" class="form-label">{{ trans('phone_number', default='Phone number') }}</label>
+                    <label for="phone" class="form-label">{{ trans('phone_number', default='Phone Number') }}</label>
                     {{ form.phone(placeholder=trans('phone_placeholder', default='+234xxxxxxxxx')) }}
                     {% if form.phone.errors %}
                         {% for error in form.phone.errors %}
@@ -60,7 +70,41 @@
                     {% endif %}
                 </div>
 
-                {% if user.role == 'trader' %}
+                {% if user.role == 'personal' %}
+                <hr class="my-4">
+                <h5>{{ trans('personal_information', default='Personal Information') }}</h5>
+                
+                <div class="form-group mb-3">
+                    <label for="first_name" class="form-label">{{ trans('first_name', default='First Name') }}</label>
+                    {{ form.first_name(placeholder=trans('first_name_placeholder', default='Enter your first name')) }}
+                    {% if form.first_name.errors %}
+                        {% for error in form.first_name.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="last_name" class="form-label">{{ trans('last_name', default='Last Name') }}</label>
+                    {{ form.last_name(placeholder=trans('last_name_placeholder', default='Enter your last name')) }}
+                    {% if form.last_name.errors %}
+                        {% for error in form.last_name.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="personal_address" class="form-label">{{ trans('address', default='Address') }}</label>
+                    {{ form.personal_address(placeholder=trans('address_placeholder', default='Enter your address')) }}
+                    {% if form.personal_address.errors %}
+                        {% for error in form.personal_address.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% elif user.role == 'trader' %}
                 <hr class="my-4">
                 <h5>{{ trans('business_information', default='Business Information') }}</h5>
                 
@@ -89,6 +133,60 @@
                     {{ form.industry(placeholder=trans('industry_placeholder', default='e.g., Retail, Services, Manufacturing')) }}
                     {% if form.industry.errors %}
                         {% for error in form.industry.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="products_services" class="form-label">{{ trans('products_services', default='Products/Services') }}</label>
+                    {{ form.products_services(placeholder=trans('products_services_placeholder', default='e.g., Clothing, Consulting')) }}
+                    {% if form.products_services.errors %}
+                        {% for error in form.products_services.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                {% elif user.role == 'agent' %}
+                <hr class="my-4">
+                <h5>{{ trans('agent_information', default='Agent Information') }}</h5>
+                
+                <div class="form-group mb-3">
+                    <label for="agent_name" class="form-label">{{ trans('agent_name', default='Agent Name') }}</label>
+                    {{ form.agent_name(placeholder=trans('agent_name_placeholder', default='Enter agent name')) }}
+                    {% if form.agent_name.errors %}
+                        {% for error in form.agent_name.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="agent_id" class="form-label">{{ trans('agent_id', default='Agent ID') }}</label>
+                    {{ form.agent_id(placeholder=trans('agent_id_placeholder', default='Enter agent ID')) }}
+                    {% if form.agent_id.errors %}
+                        {% for error in form.agent_id.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="area" class="form-label">{{ trans('area', default='Area') }}</label>
+                    {{ form.area(placeholder=trans('area_placeholder', default='Enter your area')) }}
+                    {% if form.area.errors %}
+                        {% for error in form.area.errors %}
+                            <p class="text-danger mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="agent_role" class="form-label">{{ trans('agent_role', default='Role') }}</label>
+                    {{ form.agent_role(placeholder=trans('agent_role_placeholder', default='e.g., Sales Agent, Support Agent')) }}
+                    {% if form.agent_role.errors %}
+                        {% for error in form.agent_role.errors %}
                             <p class="text-danger mt-1">{{ error }}</p>
                         {% endfor %}
                     {% endif %}
@@ -275,7 +373,6 @@
                 const settingName = this.id;
                 const value = this.checked;
 
-                // Send AJAX request to update user setting in backend
                 fetch('/settings/api/update-user-setting', {
                     method: 'POST',
                     headers: {
@@ -291,13 +388,13 @@
                 .then(data => {
                     if (!data.success) {
                         alert('{{ trans('failed_to_update_setting', default='Failed to update setting') }}: ' + (data.message || '{{ trans('unknown_error', default='Unknown error') }}'));
-                        this.checked = !value; // Revert toggle if update failed
+                        this.checked = !value;
                     }
                 })
                 .catch(error => {
                     console.error('Error updating setting:', error);
                     alert('{{ trans('error_occurred', default='An error occurred. Please try again.') }}');
-                    this.checked = !value; // Revert toggle on network error
+                    this.checked = !value;
                 });
             });
         });
