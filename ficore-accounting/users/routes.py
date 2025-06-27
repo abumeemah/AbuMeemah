@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, SelectField, validators
+from wtforms import StringField, PasswordField, TextAreaField, SelectField, SubmitField, validators
 from flask_login import login_required, current_user, login_user, logout_user
 from pymongo import errors
 from werkzeug.security import generate_password_hash, check_password_hash
