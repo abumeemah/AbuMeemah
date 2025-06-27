@@ -1,28 +1,28 @@
 {% extends 'base.html' %}
-{% block title %}{{ trans('create_account') | default('Sign Up') }}{% endblock %}
+{% block title %}{{ trans('create_account') | default('Sign Up') | escape }}{% endblock %}
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-center mb-4">{{ trans('create_account') | default('Sign Up') }}</h1>
+    <h1 class="text-center mb-4">{{ trans('create_account') | default('Sign Up') | escape }}</h1>
     <div class="card mx-auto" style="max-width: 400px;">
         <div class="card-body">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     <div class="alert alert-{{ messages[0][1] }} alert-dismissible fade show" role="alert">
-                        {{ messages[0][0] }}
+                        {{ messages[0][0] | escape }}
                         {% if messages[0][1] in ['danger', 'error'] %}
-                            <p>{{ trans('check_details', default='Please check your email and username for typos (e.g., ensure you used @gmail.com, not @gmai.com).') }}</p>
+                            <p>{{ trans('check_details', default='Please check your email and username for typos (e.g., ensure you used @gmail.com, not @gmai.com).') | escape }}</p>
                         {% endif %}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ trans('close', default='Close') | escape }}"></button>
                     </div>
                 {% endif %}
             {% endwith %}
-            <form class="validate-form needs-validation" method="POST" action="{{ url_for('users_blueprint.signup') }}" novalidate>
+            <form class="validate-form needs-validation" method="POST" action="{{ url_for('users_blueprint.signup') }}" novalidate aria-labelledby="signup-form-title">
                 {{ form.hidden_tag() }}
                 <div class="form-group mb-3">
-                    {{ form.username.label(class="form-label") | safe }}
-                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), value=form.username.data or '', required=True) | safe }}
+                    {{ form.username.label(class="form-label", **{"for": "username"}) | safe }}
+                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), value=form.username.data or '', required=True, id="username", **{"aria-describedby": "usernameFeedback" if form.username.errors else "", "aria-required": "true"}) | safe }}
                     {% if form.username.errors %}
-                        <div class="invalid-feedback">
+                        <div id="usernameFeedback" class="invalid-feedback" role="alert">
                             {% for error in form.username.errors %}
                                 {{ error | escape }}<br>
                             {% endfor %}
@@ -30,10 +30,10 @@
                     {% endif %}
                 </div>
                 <div class="form-group mb-3">
-                    {{ form.email.label(class="form-label") | safe }}
-                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), value=form.email.data or '', required=True) | safe }}
+                    {{ form.email.label(class="form-label", **{"for": "email"}) | safe }}
+                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), value=form.email.data or '', required=True, id="email", **{"aria-describedby": "emailFeedback" if form.email.errors else "", "aria-required": "true"}) | safe }}
                     {% if form.email.errors %}
-                        <div class="invalid-feedback">
+                        <div id="emailFeedback" class="invalid-feedback" role="alert">
                             {% for error in form.email.errors %}
                                 {{ error | escape }}<br>
                             {% endfor %}
@@ -41,13 +41,13 @@
                     {% endif %}
                 </div>
                 <div class="form-group mb-3 position-relative">
-                    {{ form.password.label(class="form-label") | safe }}
-                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True) | safe }}
-                    <span class="password-toggle" onclick="togglePassword('password', 'toggle-password-icon')">
-                        <i class="bi bi-eye" id="toggle-password-icon"></i>
+                    {{ form.password.label(class="form-label", **{"for": "password"}) | safe }}
+                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), required=True, id="password", **{"aria-describedby": "passwordFeedback" if form.password.errors else "", "aria-required": "true"}) | safe }}
+                    <span class="password-toggle" onclick="togglePassword('password', 'toggle-password-icon')" role="button" aria-label="{{ trans('toggle_password_visibility', default='Toggle password visibility') | escape }}" tabindex="0">
+                        <i class="bi bi-eye" id="toggle-password-icon" aria-hidden="true"></i>
                     </span>
                     {% if form.password.errors %}
-                        <div class="invalid-feedback">
+                        <div id="passwordFeedback" class="invalid-feedback" role="alert">
                             {% for error in form.password.errors %}
                                 {{ error | escape }}<br>
                             {% endfor %}
@@ -55,10 +55,10 @@
                     {% endif %}
                 </div>
                 <div class="form-group mb-3">
-                    {{ form.role.label(class="form-label") | safe }}
-                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), required=True) | safe }}
+                    {{ form.role.label(class="form-label", **{"for": "role"}) | safe }}
+                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), required=True, id="role", **{"aria-describedby": "roleFeedback" if form.role.errors else "", "aria-required": "true"}) | safe }}
                     {% if form.role.errors %}
-                        <div class="invalid-feedback">
+                        <div id="roleFeedback" class="invalid-feedback" role="alert">
                             {% for error in form.role.errors %}
                                 {{ error | escape }}<br>
                             {% endfor %}
@@ -66,10 +66,10 @@
                     {% endif %}
                 </div>
                 <div class="form-group mb-3">
-                    {{ form.language.label(class="form-label") | safe }}
-                    {{ form.language(class="form-select" + (" is-invalid" if form.language.errors else ""), required=True) | safe }}
+                    {{ form.language.label(class="form-label", **{"for": "language"}) | safe }}
+                    {{ form.language(class="form-select" + (" is-invalid" if form.language.errors else ""), required=True, id="language", **{"aria-describedby": "languageFeedback" if form.language.errors else "", "aria-required": "true"}) | safe }}
                     {% if form.language.errors %}
-                        <div class="invalid-feedback">
+                        <div id="languageFeedback" class="invalid-feedback" role="alert">
                             {% for error in form.language.errors %}
                                 {{ error | escape }}<br>
                             {% endfor %}
@@ -77,15 +77,17 @@
                     {% endif %}
                 </div>
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary">{{ trans('create_account') | default('Sign Up') }}</button>
+                    <button type="submit" class="btn btn-primary" aria-label="{{ trans('create_account', default='Sign Up') | escape }}">{{ trans('create_account') | default('Sign Up') | escape }}</button>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="{{ url_for('users_blueprint.login') }}">{{ trans('already_have_account') | default('Already have an account? Sign In') }}</a>
+                    <a href="{{ url_for('users_blueprint.login') }}" aria-label="{{ trans('already_have_account', default='Already have an account? Sign In') | escape }}">{{ trans('already_have_account') | default('Already have an account? Sign In') | escape }}</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_scripts %}
 <script>
 function togglePassword(inputId, iconId) {
     const input = document.getElementById(inputId);
@@ -94,10 +96,12 @@ function togglePassword(inputId, iconId) {
         input.type = 'text';
         icon.classList.remove('bi-eye');
         icon.classList.add('bi-eye-slash');
+        icon.setAttribute('aria-label', '{{ trans('hide_password', default='Hide password') | escape }}');
     } else {
         input.type = 'password';
         icon.classList.remove('bi-eye-slash');
         icon.classList.add('bi-eye');
+        icon.setAttribute('aria-label', '{{ trans('show_password', default='Show password') | escape }}');
     }
 }
 // Bootstrap form validation
@@ -112,6 +116,13 @@ function togglePassword(inputId, iconId) {
             }
             form.classList.add('was-validated');
         }, false);
+        // Ensure keyboard accessibility for password toggle
+        form.querySelector('.password-toggle').addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                togglePassword('password', 'toggle-password-icon');
+            }
+        });
     });
 })();
 </script>
