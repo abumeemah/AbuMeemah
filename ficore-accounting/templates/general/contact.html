@@ -37,36 +37,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script>
-    // Enhanced language toggle to handle redirect response
-    function toggleLanguage() {
-        fetch('{{ url_for("set_language", lang="ha" if session.get("lang", "en") == "en" else "en") }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lang: '{{ "ha" if session.get("lang", "en") == "en" else "en" }}' })
-        }).then(response => {
-            if (response.ok) {
-                window.location.reload();
-            } else {
-                console.error('Language toggle failed:', response.status);
-            }
-        }).catch(error => console.error('Language toggle error:', error));
-    }
-
-    // Enhanced dark mode toggle to handle 204 response
-    function toggleDarkMode() {
-        fetch('{{ url_for("set_dark_mode") }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dark_mode: !{{ session.get('dark_mode', False) | tojson }} })
-        }).then(response => {
-            if (response.ok) {
-                document.documentElement.classList.toggle('dark-mode');
-                window.location.reload();
-            } else {
-                console.error('Dark mode toggle failed:', response.status);
-            }
-        }).catch(error => console.error('Dark mode toggle error:', error));
-    }
-</script>
+{# No additional scripts needed, dark mode and language toggle are handled globally in base.html #}
 {% endblock %}
