@@ -11,6 +11,14 @@ TRANSLATIONS = {
         'welcome_back': 'Welcome back to Ficore Records',
         'i_owe': 'I Owe',
         'i_am_owed': 'I Am Owed',
+        'complete_personal_setup': 'Complete Personal Setup',
+        'provide_personal_details': 'Please provide your personal details to complete the setup.',
+        'complete_business_setup': 'Complete Business Setup',
+        'provide_business_details': 'Please provide your business details to complete the setup.',
+        'complete_agent_setup': 'Complete Agent Setup',
+        'provide_agent_details': 'Please provide your agent details to complete the setup.',
+        'submit': 'Submit personal details',
+        'back': 'Go back',
         'profile_section': 'Profile Section',
         'coins_section': 'Coins Section',
         'debtors_section': 'Debtors Section',
@@ -1006,7 +1014,15 @@ TRANSLATIONS = {
         'payments_section': 'Kuɗin Daya Fita',      
         'inventory_section': 'Haja da Kaya',           
         'report_section': 'Rahotanni',
-        'view': 'Duba'
+        'view': 'Duba',
+        'complete_personal_setup': 'Kammala Saitin Mutum',
+        'provide_personal_details': 'Da fatan za a ba da bayanan ku na sirri don kammala saitin.',
+        'complete_business_setup': 'Kammala Saitin Kasuwanci',
+        'provide_business_details': 'Da fatan za a ba da bayanan kasuwancin ku don kammala saitin.',
+        'complete_agent_setup': 'Kammala Saitin Wakili',
+        'provide_agent_details': 'Da fatan za a ba da bayanan wakilin ku don kammala saitin.',
+        'submit': 'Mika bayanan sirri',
+        'back': 'Koma baya'
     }
 }
 
