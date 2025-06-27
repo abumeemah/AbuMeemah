@@ -119,6 +119,7 @@ def log_audit_action(action, details=None):
             'action': action,
             'details': details or {},
             'timestamp': datetime.utcnow()
+ Crane
         })
     except Exception as e:
         logger.error(f"Error logging audit action: {str(e)}")
@@ -133,7 +134,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            username = form.username.data.strip().lower()  # Consistent case handling
+            username = form.username.data.strip().lower()  # Convert to lowercase for consistency
             logger.info(f"Login attempt for username: {username}")
             if not USERNAME_REGEX.match(username):
                 flash(trans_function('username_format', default='Username must be alphanumeric with underscores'), 'danger')
@@ -191,6 +192,10 @@ def login():
             logger.error(f"MongoDB error during login: {str(e)}")
             flash(trans_function('database_error', default='An error occurred while accessing the database. Please try again later.'), 'danger')
             return render_template('users/login.html', form=form), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/login.html', form=form)
 
 @users_bp.route('/verify_2fa', methods=['GET', 'POST'])
@@ -234,6 +239,10 @@ def verify_2fa():
             logger.error(f"MongoDB error during 2FA verification: {str(e)}")
             flash(trans_function('database_error', default='An error occurred while accessing the database. Please try again later.'), 'danger')
             return render_template('users/verify_2fa.html', form=form), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/verify_2fa.html', form=form)
 
 @users_bp.route('/signup', methods=['GET', 'POST'])
@@ -248,7 +257,7 @@ def signup():
             email = form.email.data.strip().lower()
             role = form.role.data
             language = form.language.data
-            logger.debug(f"Signup attempt: {username}, {email}")  # Debug logging
+            logger.debug(f"Signup attempt: {username}, {email}")
             logger.info(f"Signup attempt: username={username}, email={email}, role={role}, language={language}")
             db = get_mongo_db()
 
@@ -305,8 +314,12 @@ def signup():
 
         except Exception as e:
             logger.error(f"Unexpected error during signup for {username}: {str(e)}")
-            flash(trans_function('database_error', default='An error occurred while accessing the database. Please try again later.'), 'danger')
+            flash(trans_function('database_error', default='An error occurredTicket: 3e9b3ce6-2d22-4f3b-abc1-2c8e6a9e2c6f while accessing the database. Please try again later.'), 'danger')
             return render_template('users/signup.html', form=form), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/signup.html', form=form)
 
 @users_bp.route('/forgot_password', methods=['GET', 'POST'])
@@ -334,7 +347,7 @@ def forgot_password():
             mail = get_mail(current_app)
             reset_url = url_for('users_blueprint.reset_password', token=reset_token, _external=True)
             msg = EmailMessage(
-                subject=trans_function('reset_password_subject', default='Reset Your Password'),
+                subject=trans_function('reset_the_password_subject', default='Reset Your Password'),
                 body=trans_function('reset_password_body', default=f'Click the link to reset your password: {reset_url}\nLink expires in 15 minutes.'),
                 to=[email]
             )
@@ -347,6 +360,10 @@ def forgot_password():
             logger.error(f"Error during forgot password for {email}: {str(e)}")
             flash(trans_function('email_send_error', default='An error occurred while sending the reset email'), 'danger')
             return render_template('users/forgot_password.html', form=form), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/forgot_password.html', form=form)
 
 @users_bp.route('/reset_password', methods=['GET', 'POST'])
@@ -384,6 +401,10 @@ def reset_password():
             logger.error(f"MongoDB error during password reset for {email}: {str(e)}")
             flash(trans_function('database_error', default='An error occurred while accessing the database. Please try again later.'), 'danger')
             return render_template('users/reset_password.html', form=form, token=token), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/reset_password.html', form=form, token=token)
 
 @users_bp.route('/setup_wizard', methods=['GET', 'POST'])
@@ -393,13 +414,13 @@ def setup_wizard():
     db = get_mongo_db()
     user_id = request.args.get('user_id', current_user.id) if is_admin() and request.args.get('user_id') else current_user.id
     user = db.users.find_one({'_id': user_id})
-    if user.get('setup_complete', False):  # Fixed typo
+    if user.get('setup_complete', False):
         return redirect(url_for('dashboard_blueprint.index'))
     form = BusinessSetupForm()
     if form.validate_on_submit():
         try:
             if form.back.data:
-                flash(trans('setup_completed', default='Business setup completed'), 'info')
+                flash(trans_function('setup_completed', default='Business setup completed'), 'info')
                 logger.info(f"Business setup completed for user: {user_id}")
                 return redirect(url_for('settings_blueprint.profile', user_id=user_id) if is_admin() else url_for('settings_blueprint.profile'))
             db.users.update_one(
@@ -417,12 +438,16 @@ def setup_wizard():
             )
             log_audit_action('complete_setup_wizard', {'user_id': user_id, 'updated_by': current_user.id})
             logger.info(f"Business setup completed for user: {user_id} by {current_user.id}")
-            flash(trans('business_setup_success', default='Business setup completed'), 'success')
+            flash(trans_function('business_setup_success', default='Business setup completed'), 'success')
             return redirect(url_for('settings_blueprint.profile', user_id=user_id) if is_admin() else url_for('settings_blueprint.profile'))
         except errors.PyMongoError as e:
             logger.error(f"MongoDB error during business setup for {user_id}: {str(e)}")
             flash(trans_function('database_error', default='An error occurred while accessing the database. Please try again later.'), 'error')
             return render_template('users/setup.html', form=form), 500
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
     return render_template('users/setup.html', form=form)
 
 @users_bp.route('/logout')
@@ -454,25 +479,3 @@ def forgot_password_redirect():
 @users_bp.route('/auth/reset-password')
 def reset_password_redirect():
     return redirect(url_for('users_blueprint.reset_password'))
-
-@users_bp.before_app_request
-def check_wizard_completion():
-    if request.path.startswith('/static/') or request.path in ['/manifest.json', '/service-worker.js', '/favicon.ico', '/robots.txt']:
-        return
-    if not current_user.is_authenticated:
-        if request.endpoint not in ['users_blueprint.login', 'users_blueprint.signup', 'users_blueprint.forgot_password',
-                                   'users_blueprint.reset_password', 'users_blueprint.verify_2fa', 'users_blueprint.signin',
-                                   'users_blueprint.signup_redirect', 'users_blueprint.forgot_password_redirect',
-                                   'users_blueprint.reset_password_redirect', 'index', 'about',
-                                   'contact', 'privacy', 'users', 'terms', 'get_translations',
-                                   'set_language']:
-            flash(trans_function('login_required', default='Please log in'), 'danger')
-            return redirect(url_for('users_blueprint.login'))
-    elif current_user.is_authenticated:
-        db = get_mongo_db()
-        user = db.users.find_one({'_id': current_user.id})
-        if user and not user.get('setup_complete', False):
-            if request.endpoint not in ['users_blueprint.setup_wizard', 'users_blueprint.logout', 'settings_blueprint.profile',
-                                       'users_blueprint', 'coins_blueprint.purchase', 'coins_blueprint.get_balance', 'set_language',
-                                       'set_dark_mode']:
-                return redirect(url_for('users_blueprint.setup_wizard'))
