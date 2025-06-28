@@ -31,8 +31,9 @@
     --text-color: #1e293b;
     --text-muted: #6b7280;
     --text-secondary: #4a5568;
-    --navbar-bg: #f5f5f5;
-    --navbar-text-color: #ffffff;
+    --navbar-bg: rgba(255, 255, 255, 0.85); /* Updated to slightly opaque white */
+    --navbar-text-color: #1F1F1F; /* Updated to dark color for contrast */
+    --navbar-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Added subtle shadow */
     --footer-bg: #0F3D57;
     --card-border: #e2e8f0;
     --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
@@ -85,8 +86,9 @@
     --text-color: #f1f5f9;
     --text-muted: #9ca3af;
     --text-secondary: #94a3b8;
-    --navbar-bg: #0f172a;
-    --navbar-text-color: #f1f5f9;
+    --navbar-bg: rgba(255, 255, 255, 0.85); /* Same as light mode for consistency */
+    --navbar-text-color: #1F1F1F; /* Dark color for contrast */
+    --navbar-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Same shadow for consistency */
     --footer-bg: #1e293b;
     --card-border: #4b5563;
     --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
