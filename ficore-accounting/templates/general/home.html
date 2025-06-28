@@ -261,33 +261,6 @@
     {% endif %}
 </div>
 
-{% if current_user.is_authenticated %}
-<nav class="bottom-navigation">
-    <div class="nav-container">
-        <a href="{{ url_for('index') }}" class="nav-item active">
-            <i class="bi bi-house"></i>
-            <span>{{ trans('home', default='Home') }}</span>
-        </a>
-        <a href="{{ url_for('dashboard_blueprint.index') }}" class="nav-item">
-            <i class="bi bi-list-ul"></i>
-            <span>{{ trans('debts', default='Debts') }}</span>
-        </a>
-        <a href="{{ url_for('receipts_blueprint.index') }}" class="nav-item">
-            <i class="bi bi-arrow-left-right"></i>
-            <span>{{ trans('cashflow', default='Cashflow') }}</span>
-        </a>
-        <a href="{{ url_for('inventory_blueprint.index') }}" class="nav-item">
-            <i class="bi bi-box-seam"></i>
-            <span>{{ trans('inventory', default='Inventory') }}</span>
-        </a>
-        <a href="{{ url_for('settings_blueprint.profile') }}" class="nav-item">
-            <i class="bi bi-person"></i>
-            <span>{{ trans('profile', default='Profile') }}</span>
-        </a>
-    </div>
-</nav>
-{% endif %}
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (!{{ current_user.is_authenticated | tojson }}) return;
