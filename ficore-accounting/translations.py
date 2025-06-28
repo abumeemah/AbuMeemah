@@ -576,7 +576,7 @@ TRANSLATIONS = {
         'products_services_required': 'Products/Services is required',
         'phone_number_required': 'Phone number is required',
         'phone_number_format': 'Phone number must be 10-15 digits',
-        'terms': 'I accept the Terms and Conditions',
+        'terms': 'Terms and Conditions',
         'terms_required': 'You must accept the terms',
         'first_name_required': 'First name is required',
         'last_name_required': 'Last name is required',
