@@ -21,7 +21,7 @@
     {% block head %}{% endblock %}
 </head>
 <body>
-    {% if current_user.is_authenticated %} {# <--- MODIFIED LINE: Removed 'and request.endpoint != 'index'' #}
+    {% if current_user.is_authenticated %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('index') | e }}" aria-label="{{ trans('home', default='Home') | e }}">
@@ -194,6 +194,33 @@
             {% block content %}{% endblock %}
         </div>
     </main>
+
+    {% if current_user.is_authenticated %}
+    <nav class="bottom-navigation">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+                <i class="bi bi-house"></i>
+                <span>{{ trans('home', default='Home') }}</span>
+            </a>
+            <a href="{{ url_for('dashboard_blueprint.index') }}" class="nav-item {% if request.endpoint == 'dashboard_blueprint.index' %}active{% endif %}">
+                <i class="bi bi-list-ul"></i>
+                <span>{{ trans('debts', default='Debts') }}</span>
+            </a>
+            <a href="{{ url_for('receipts_blueprint.index') }}" class="nav-item {% if request.endpoint == 'receipts_blueprint.index' %}active{% endif %}">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>{{ trans('cashflow', default='Cashflow') }}</span>
+            </a>
+            <a href="{{ url_for('inventory_blueprint.index') }}" class="nav-item {% if request.endpoint == 'inventory_blueprint.index' %}active{% endif %}">
+                <i class="bi bi-box-seam"></i>
+                <span>{{ trans('inventory', default='Inventory') }}</span>
+            </a>
+            <a href="{{ url_for('settings_blueprint.profile') }}" class="nav-item {% if request.endpoint == 'settings_blueprint.profile' %}active{% endif %}">
+                <i class="bi bi-person"></i>
+                <span>{{ trans('profile', default='Profile') }}</span>
+            </a>
+        </div>
+    </nav>
+    {% endif %}
 
     <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
         <div class="modal-dialog">
