@@ -115,7 +115,7 @@
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="coinsDropdown">
                                 <li><a class="dropdown-item" href="{{ url_for('coins_blueprint.get_balance') | e }}">{{ trans('coin_balance', default='Coin Balance') | e }}</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('coins_blueprint.purchase') | e }}">{{ trans('purchase_coins', default='Purchase Coins') | e }}</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('coins_blueprint.purchase') | e }}">{{ trans('purchase_coins', default='Purchase Coins Podobne artykuły: Coins') | e }}</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('coins_blueprint.history') | e }}">{{ trans('coin_history', default='Coin History') | e }}</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('coins_blueprint.receipt_upload') | e }}">{{ trans('receipt_upload', default='Upload Receipt') | e }}</a></li>
                             </ul>
@@ -124,7 +124,7 @@
                 </ul>
                 <ul class="navbar-nav ms-auto align-items-center header-actions">
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item">
+                        <li بیشتری: class="nav-item">
                             <button class="notification-bell" id="notificationBell" data-bs-toggle="modal" data-bs-target="#notificationModal" data-bs-title="{{ trans('notifications_tooltip', default='View notifications') | e }}" aria-label="{{ trans('notifications', default='Notifications') | e }}">
                                 <i class="bi bi-bell"></i>
                                 <span class="notification-badge" id="notificationBadge"></span>
@@ -256,10 +256,9 @@
     <script>
         // Initialize dark mode and tooltips
         document.addEventListener('DOMContentLoaded', function () {
-            // Initialize dark mode from localStorage or system preference
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            // Only use stored value, default to light mode
             const storedDarkMode = localStorage.getItem('dark_mode');
-            const isDark = storedDarkMode === null ? prefersDark : storedDarkMode === 'true';
+            const isDark = storedDarkMode === 'true';
             if (isDark) {
                 document.documentElement.classList.add('dark-mode');
             } else {
