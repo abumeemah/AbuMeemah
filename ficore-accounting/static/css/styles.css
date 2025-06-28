@@ -438,20 +438,21 @@ h3 { font-size: 1.25rem; }
 }
 
 /* Specific styling for the two primary CTA cards (colored backgrounds) */
+/* Specific styling for the two primary CTA cards (colored backgrounds) */
 .cta-creditor-card {
-    background: linear-gradient(135deg, rgba(184, 138, 68, 0.8) 60%, rgba(145, 114, 67, 0.9) 100%);
+    background: linear-gradient(135deg, #f5dabc 60%, #e0bc8c 100%); /* Muted Orange: #f5dabc, deeper shade for gradient */
     color: #fff;
     border: none;
-    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 32px rgba(245, 218, 188, 0.15);
     filter: brightness(1);
     padding: 1rem;
 }
 
 .cta-debtor-card {
-    background: linear-gradient(135deg, rgba(107, 114, 128, 0.8) 60%, rgba(75, 85, 99, 0.9) 100%);
+    background: linear-gradient(135deg, #8cdeda 60%, #4fb7b2 100%); /* Muted Teal: #8cdeda, deeper shade for gradient */
     color: #fff;
     border: none;
-    box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 32px rgba(140, 222, 218, 0.15);
     filter: brightness(1);
     padding: 1rem;
 }
